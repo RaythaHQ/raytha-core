@@ -1,4 +1,4 @@
-# .NET 10 Clean Architecture Standards for Raytha
+# .NET 10 Clean Architecture Standards
 
 **Version:** 1.0  
 **Last Updated:** November 21, 2025  
@@ -11,7 +11,7 @@
 
 ### Goals
 
-This document defines the **single source of truth** for how Raytha's .NET 10 Razor Pages web application should be structured and written. Our primary goals are:
+This document defines the **single source of truth** for how the .NET 10 Razor Pages web application should be structured and written. Our primary goals are:
 
 - **Maintainability:** Code that is easy to understand, modify, and extend
 - **Testability:** Architecture that enables comprehensive unit and integration testing
@@ -20,14 +20,14 @@ This document defines the **single source of truth** for how Raytha's .NET 10 Ra
 - **Performance:** Efficient, allocation-aware code that scales
 - **Security:** Defense-in-depth with proper input validation, authorization, and error handling
 
-### Clean Architecture in Raytha Context
+### Clean Architecture Context
 
-Raytha implements Clean Architecture principles through a layered approach where:
+The application implements Clean Architecture principles through a layered approach where:
 
-1. **Domain Layer** (`Raytha.Domain`) contains pure business logic with zero external dependencies
-2. **Application Layer** (`Raytha.Application`) orchestrates use cases via CQRS pattern using MediatR
-3. **Infrastructure Layer** (`Raytha.Infrastructure`) handles external concerns (database, file storage, email)
-4. **Presentation Layer** (`Raytha.Web`) is a thin UI layer using Razor Pages
+1. **Domain Layer** (`App.Domain`) contains pure business logic with zero external dependencies
+2. **Application Layer** (`App.Application`) orchestrates use cases via CQRS pattern using MediatR
+3. **Infrastructure Layer** (`App.Infrastructure`) handles external concerns (database, file storage, email)
+4. **Presentation Layer** (`App.Web`) is a thin UI layer using Razor Pages
 
 **Dependency Rule:** Dependencies flow inward only. The Domain layer knows nothing about outer layers. The Application layer depends only on Domain. Infrastructure implements Application interfaces. The Web layer depends on Application and uses Infrastructure through DI.
 
@@ -39,12 +39,12 @@ Raytha implements Clean Architecture principles through a layered approach where
 
 ### Project Responsibilities
 
-#### Raytha.Domain
+#### App.Domain
 - **Purpose:** Core business entities, value objects, domain events, and domain exceptions
 - **Responsibilities:**
-  - Define entities (`ContentItem`, `User`, `ContentType`, etc.)
-  - Define value objects (`BaseFieldType`, `SortOrder`, `ConditionOperator`)
-  - Define domain events (`ContentItemCreatedEvent`)
+  - Define entities (`User`, `Role`, `UserGroup`, `EmailTemplate`, `AuthenticationScheme`, `MediaItem`, etc.)
+  - Define value objects (`SortOrder`, `ConditionOperator`, etc.)
+  - Define domain events (`UserCreatedEvent`, `AdminCreatedEvent`, etc.)
   - Define domain-specific exceptions
 - **Must NOT contain:**
   - Any references to external libraries (except `System.Text.Json` for entity serialization)
@@ -56,13 +56,13 @@ Raytha implements Clean Architecture principles through a layered approach where
   - Value objects inherit from `ValueObject`
   - Domain events are raised via `AddDomainEvent()` on entities
 
-#### Raytha.Application
+#### App.Application
 - **Purpose:** Use case orchestration via CQRS, DTOs, validation, and interfaces
 - **Responsibilities:**
   - Define commands and queries (CQRS pattern)
   - Define validators using FluentValidation
   - Define DTOs for data transfer
-  - Define application interfaces (e.g., `IRaythaDbContext`, `IFileStorageProvider`)
+  - Define application interfaces (e.g., `IAppDbContext`, `IFileStorageProvider`)
   - Define MediatR behaviors (validation, audit, exception handling)
   - Background task definitions
 - **Must NOT contain:**
@@ -70,32 +70,31 @@ Raytha implements Clean Architecture principles through a layered approach where
   - HTTP request/response handling (belongs in Web)
   - UI concerns
 - **Key Patterns:**
-  - Commands: `CreateContentItem.Command`, `EditContentItem.Command`
-  - Queries: `GetContentItems.Query`, `GetContentItemById.Query`
+  - Commands: `CreateUser.Command`, `EditUser.Command`, `CreateRole.Command`
+  - Queries: `GetUsers.Query`, `GetUserById.Query`, `GetRoles.Query`
   - Each command/query has nested `Validator` and `Handler` classes
   - Handlers return `CommandResponseDto<T>` or `QueryResponseDto<T>`
   - Use `IRequest<TResponse>` from Mediator library
 
-#### Raytha.Infrastructure
+#### App.Infrastructure
 - **Purpose:** Implementation of external concerns and Application interfaces
 - **Responsibilities:**
-  - EF Core `DbContext` implementation (`RaythaDbContext`)
+  - EF Core `DbContext` implementation (`AppDbContext`)
   - Entity configurations (Fluent API)
-  - Database migrations (via `Raytha.Migrations.SqlServer` and `Raytha.Migrations.Postgres`)
+  - Database migrations
   - File storage implementations (`LocalFileStorageProvider`, `AzureBlobFileStorageProvider`, `S3FileStorageProvider`)
   - Email service implementation
   - Background task queue implementation
-  - Custom JSON query engine for dynamic content queries
 - **Must NOT contain:**
   - Business logic (belongs in Domain/Application)
   - HTTP/Web concerns
   - Razor Pages or UI components
 - **Key Patterns:**
-  - Implements interfaces defined in `Raytha.Application.Common.Interfaces`
+  - Implements interfaces defined in `App.Application.Common.Interfaces`
   - Configuration classes implement `IEntityTypeConfiguration<T>`
   - Services registered via `AddInfrastructureServices()` extension method
 
-#### Raytha.Web
+#### App.Web
 - **Purpose:** Razor Pages presentation layer, authentication, and HTTP concerns
 - **Responsibilities:**
   - Razor Pages (`.cshtml` and `.cshtml.cs` files)
@@ -120,16 +119,16 @@ Raytha implements Clean Architecture principles through a layered approach where
 
 **Examples:**
 ```
-Raytha.Domain.Entities.ContentItem
-Raytha.Domain.ValueObjects.FieldTypes.BaseFieldType
-Raytha.Application.ContentItems.Commands.CreateContentItem
-Raytha.Application.ContentItems.Queries.GetContentItems
-Raytha.Infrastructure.Persistence.RaythaDbContext
-Raytha.Web.Areas.Admin.Pages.ContentItems.Edit
+App.Domain.Entities.User
+App.Domain.ValueObjects.SortOrder
+App.Application.Users.Commands.CreateUser
+App.Application.Users.Queries.GetUsers
+App.Infrastructure.Persistence.AppDbContext
+App.Web.Areas.Admin.Pages.Users.Edit
 ```
 
 **Rules:**
-- Feature folders group related functionality (e.g., `ContentItems`, `Users`, `Themes`)
+- Feature folders group related functionality (e.g., `Users`, `Roles`, `EmailTemplates`)
 - Type suffixes clarify purpose (e.g., `Commands`, `Queries`, `EventHandlers`)
 - Nested classes are allowed for grouping (Command, Validator, Handler in same file)
 
@@ -137,17 +136,16 @@ Raytha.Web.Areas.Admin.Pages.ContentItems.Edit
 
 **Application Layer:**
 ```
-ContentItems/
+Users/
   Commands/
-    CreateContentItem.cs
-    EditContentItem.cs
+    CreateUser.cs
+    EditUser.cs
   Queries/
-    GetContentItems.cs
-    GetContentItemById.cs
+    GetUsers.cs
+    GetUserById.cs
   EventHandlers/
-    ContentItemCreatedEventHandler.cs
-  ContentItemDto.cs
-  FieldValueConverter.cs
+    UserCreatedEventHandler.cs
+  UserDto.cs
 ```
 
 **Web Layer (Razor Pages):**
@@ -155,15 +153,13 @@ ContentItems/
 Areas/
   Admin/
     Pages/
-      ContentItems/
+      Users/
         Index.cshtml
         Index.cshtml.cs
         Create.cshtml
         Create.cshtml.cs
         Edit.cshtml
         Edit.cshtml.cs
-        _Partials/
-          _FieldRenderer.cshtml
 ```
 
 **Rules:**
@@ -181,7 +177,7 @@ Areas/
 **Good PageModel Example:**
 
 ```csharp
-[Authorize(Policy = BuiltInContentTypePermission.CONTENT_TYPE_EDIT_PERMISSION)]
+[Authorize]
 public class Create : BaseAdminPageModel
 {
     [BindProperty]
@@ -193,7 +189,7 @@ public class Create : BaseAdminPageModel
         SetBreadcrumbs(/*...*/);
         
         // 2. Load data via MediatR queries
-        var webTemplates = await Mediator.Send(new GetWebTemplates.Query { /*...*/ });
+        var roles = await Mediator.Send(new GetRoles.Query { /*...*/ });
         
         // 3. Build view model
         Form = new FormModel { /*...*/ };
@@ -204,10 +200,11 @@ public class Create : BaseAdminPageModel
     public async Task<IActionResult> OnPost()
     {
         // 1. Map form data to command
-        var command = new CreateContentItem.Command
+        var command = new CreateUser.Command
         {
-            Content = MapFromFieldValueModel(Form.FieldValues),
-            TemplateId = Form.TemplateId,
+            FirstName = Form.FirstName,
+            LastName = Form.LastName,
+            EmailAddress = Form.EmailAddress,
         };
         
         // 2. Execute command via MediatR
@@ -216,7 +213,7 @@ public class Create : BaseAdminPageModel
         // 3. Handle result
         if (response.Success)
         {
-            SetSuccessMessage("Item was created successfully.");
+            SetSuccessMessage("User was created successfully.");
             return RedirectToPage("Edit", new { id = response.Result });
         }
         else
@@ -230,8 +227,9 @@ public class Create : BaseAdminPageModel
     // Nested FormModel as record
     public record FormModel
     {
-        public string TemplateId { get; set; }
-        public FieldValueViewModel[] FieldValues { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string EmailAddress { get; set; }
     }
 }
 ```
@@ -252,30 +250,26 @@ public class Create : BaseAdminPageModel
 
 ```
 PageModel (base ASP.NET Core class)
-  └── BasePageModel (Raytha base, provides Mediator, CurrentUser, logging)
+  └── BasePageModel (App base, provides Mediator, CurrentUser, logging)
       └── BaseAdminPageModel (adds [Authorize] for admin area)
-          └── BaseHasFavoriteViewsPageModel (content type context + favorites)
 ```
 
 **When to use:**
 - `BasePageModel`: All pages (provides core services)
 - `BaseAdminPageModel`: Admin area pages (requires authentication)
-- `BaseHasFavoriteViewsPageModel`: Content type pages (provides CurrentView context)
 
 ### View Organization
 
 **Folder Structure:**
 ```
 Pages/
-  ContentItems/
+  Users/
     Index.cshtml          # List view
     Index.cshtml.cs       # PageModel
     Create.cshtml         # Create form
     Create.cshtml.cs
     Edit.cshtml           # Edit form
     Edit.cshtml.cs
-    _Partials/            # Shared partials
-      _FieldRenderer.cshtml
 ```
 
 **Naming Conventions:**
@@ -294,10 +288,12 @@ public FormModel Form { get; set; }
 public async Task<IActionResult> OnPost()
 {
     // Map FormModel → Command
-    var command = new EditContentItem.Command
+    var command = new EditUser.Command
     {
         Id = Form.Id,
-        Content = MapFromFieldValueModel(Form.FieldValues),
+        FirstName = Form.FirstName,
+        LastName = Form.LastName,
+        EmailAddress = Form.EmailAddress,
     };
     
     // Send command
@@ -329,8 +325,8 @@ public async Task<IActionResult> OnPost()
 
 ```cshtml
 @* Pass model and view data *@
-<partial name="_Partials/_FieldRenderer" 
-         model="Model.Form.FieldValues[i]"
+<partial name="_Partials/_UserRoleItem" 
+         model="Model.Form.Roles[i]"
          view-data="@(new ViewDataDictionary(ViewData) { 
              { "Index", i }, 
              { "ParentModel", Model } 
@@ -352,27 +348,30 @@ public async Task<IActionResult> OnPost()
 
 ### ViewModels vs DTOs
 
-- **DTOs** (`ContentItemDto`): Data transfer between Application and Web layers
-- **ViewModels** (`FieldValueViewModel`): UI-specific models with display logic
+- **DTOs** (`UserDto`): Data transfer between Application and Web layers
+- **ViewModels**: UI-specific models with display logic
 
 **Example:**
 
 ```csharp
 // DTO from Application layer
-public record ContentItemDto
+public record UserDto
 {
     public string Id { get; init; }
-    public dynamic DraftContent { get; init; }
+    public string FirstName { get; init; }
+    public string LastName { get; init; }
+    public string EmailAddress { get; init; }
 }
 
 // ViewModel in PageModel
-public class FieldValueViewModel
+public class UserViewModel
 {
-    public string Label { get; set; }
-    public string Value { get; set; }
+    public string Id { get; set; }
+    public string FullName { get; set; }
+    public string EmailAddress { get; set; }
     
     // UI-specific helper
-    public string AsteriskCssIfRequired => IsRequired ? "raytha-required" : string.Empty;
+    public string DisplayName => $"{FullName} ({EmailAddress})";
 }
 ```
 
@@ -391,40 +390,28 @@ public class FieldValueViewModel
 **Structure:**
 
 ```csharp
-public class ContentItem : BaseAuditableEntity
+public class User : BaseAuditableEntity
 {
     // Public properties (EF Core navigation)
-    public bool IsPublished { get; set; }
-    public Guid ContentTypeId { get; set; }
-    public virtual ContentType? ContentType { get; set; }
+    public bool IsAdmin { get; set; }
+    public bool IsActive { get; set; }
+    public string FirstName { get; set; } = null!;
+    public string LastName { get; set; } = null!;
+    public string EmailAddress { get; set; } = null!;
+    public Guid? AuthenticationSchemeId { get; set; }
+    public virtual AuthenticationScheme? AuthenticationScheme { get; set; }
     
-    // Private backing fields for complex types
-    private string? _DraftContent { get; set; }
-    private dynamic _draftContentAsDynamic;
-    
-    // NotMapped computed property
+    // Computed property
     [NotMapped]
-    public dynamic DraftContent
-    {
-        get
-        {
-            if (_draftContentAsDynamic == null)
-            {
-                _draftContentAsDynamic = JsonSerializer.Deserialize<dynamic>(_DraftContent ?? "{}");
-            }
-            return _draftContentAsDynamic;
-        }
-        set
-        {
-            _draftContentAsDynamic = value;
-            _DraftContent = JsonSerializer.Serialize(value);
-        }
-    }
+    public string FullName => $"{FirstName} {LastName}";
+    
+    // Navigation properties
+    public virtual ICollection<Role> Roles { get; set; }
     
     // Override ToString for debugging
     public override string ToString()
     {
-        return PrimaryField;
+        return FullName;
     }
 }
 ```
@@ -432,7 +419,7 @@ public class ContentItem : BaseAuditableEntity
 **Rules:**
 - Inherit from `BaseEntity` (has `Id`) or `BaseAuditableEntity` (adds audit fields)
 - Use `virtual` for navigation properties (EF Core lazy loading)
-- Nullable reference types enabled (`ContentType?`)
+- Nullable reference types enabled (`AuthenticationScheme?`, `Role?`)
 - Private backing fields for serialized JSON or complex computed properties
 - Use `[NotMapped]` for properties not persisted to database
 - Keep behavior methods minimal (domain logic goes in handlers)
@@ -443,28 +430,25 @@ public class ContentItem : BaseAuditableEntity
 **Structure:**
 
 ```csharp
-public abstract class BaseFieldType : ValueObject
+public class SortOrder : ValueObject
 {
-    protected BaseFieldType(string label, string developerName, bool hasChoices)
+    protected SortOrder(string developerName)
     {
-        Label = label;
         DeveloperName = developerName;
-        HasChoices = hasChoices;
     }
     
     public string DeveloperName { get; private set; } = string.Empty;
-    public string Label { get; private set; } = string.Empty;
     
-    public static BaseFieldType From(string developerName)
+    public static SortOrder From(string developerName)
     {
         var type = SupportedTypes.FirstOrDefault(p => p.DeveloperName == developerName.ToLower());
         if (type == null)
-            throw new UnsupportedFieldTypeException(developerName);
+            throw new SortOrderNotFoundException(developerName);
         return type;
     }
     
-    public static implicit operator string(BaseFieldType scheme) => scheme.DeveloperName;
-    public static explicit operator BaseFieldType(string type) => From(type);
+    public static implicit operator string(SortOrder order) => order.DeveloperName;
+    public static explicit operator SortOrder(string type) => From(type);
     
     protected override IEnumerable<object> GetEqualityComponents()
     {
@@ -486,37 +470,44 @@ public abstract class BaseFieldType : ValueObject
 **Command Example:**
 
 ```csharp
-public class CreateContentItem
+public class CreateUser
 {
     public record Command : LoggableRequest<CommandResponseDto<ShortGuid>>
     {
-        public bool SaveAsDraft { get; init; }
-        public ShortGuid TemplateId { get; init; }
-        public string ContentTypeDeveloperName { get; init; } = string.Empty;
-        public IDictionary<string, dynamic> Content { get; init; }
+        public string FirstName { get; init; } = string.Empty;
+        public string LastName { get; init; } = string.Empty;
+        public string EmailAddress { get; init; } = string.Empty;
+        public bool IsAdmin { get; init; }
     }
 
     public class Validator : AbstractValidator<Command>
     {
-        public Validator(IRaythaDbContext db)
+        public Validator(IAppDbContext db)
         {
+            RuleFor(x => x.EmailAddress)
+                .NotEmpty()
+                .EmailAddress()
+                .WithMessage("Email address is required.");
+            
             RuleFor(x => x).Custom((request, context) =>
             {
-                if (string.IsNullOrEmpty(request.ContentTypeDeveloperName))
+                var existingUser = db.Users
+                    .FirstOrDefault(p => p.EmailAddress == request.EmailAddress);
+                
+                if (existingUser != null)
                 {
-                    context.AddFailure(Constants.VALIDATION_SUMMARY, "ContentTypeDeveloperName is required.");
-                    return;
+                    context.AddFailure(Constants.VALIDATION_SUMMARY, 
+                        "A user with this email address already exists.");
                 }
-                // ... more validation
             });
         }
     }
 
     public class Handler : IRequestHandler<Command, CommandResponseDto<ShortGuid>>
     {
-        private readonly IRaythaDbContext _db;
+        private readonly IAppDbContext _db;
 
-        public Handler(IRaythaDbContext db)
+        public Handler(IAppDbContext db)
         {
             _db = db;
         }
@@ -525,9 +516,15 @@ public class CreateContentItem
             Command request,
             CancellationToken cancellationToken)
         {
-            var entity = new ContentItem { /* ... */ };
-            _db.ContentItems.Add(entity);
-            entity.AddDomainEvent(new ContentItemCreatedEvent(entity));
+            var entity = new User 
+            { 
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                EmailAddress = request.EmailAddress,
+                IsAdmin = request.IsAdmin
+            };
+            _db.Users.Add(entity);
+            entity.AddDomainEvent(new UserCreatedEvent(entity));
             await _db.SaveChangesAsync(cancellationToken);
             
             return new CommandResponseDto<ShortGuid>(entity.Id);
@@ -539,40 +536,56 @@ public class CreateContentItem
 **Query Example:**
 
 ```csharp
-public class GetContentItems
+public class GetUsers
 {
     public record Query : GetPagedEntitiesInputDto, 
-                          IRequest<IQueryResponseDto<ListResultDto<ContentItemDto>>>
+                          IRequest<IQueryResponseDto<ListResultDto<UserDto>>>
     {
-        public ShortGuid? ViewId { get; init; }
         public string? Filter { get; init; }
+        public bool? IsAdmin { get; init; }
     }
 
-    public class Handler : IRequestHandler<Query, IQueryResponseDto<ListResultDto<ContentItemDto>>>
+    public class Handler : IRequestHandler<Query, IQueryResponseDto<ListResultDto<UserDto>>>
     {
-        private readonly IRaythaDbJsonQueryEngine _db;
+        private readonly IAppDbContext _db;
 
-        public Handler(IRaythaDbJsonQueryEngine db)
+        public Handler(IAppDbContext db)
         {
             _db = db;
         }
 
-        public async ValueTask<IQueryResponseDto<ListResultDto<ContentItemDto>>> Handle(
+        public async ValueTask<IQueryResponseDto<ListResultDto<UserDto>>> Handle(
             Query request,
             CancellationToken cancellationToken)
         {
-            var items = _db.QueryContentItems(/* ... */);
-            var count = _db.CountContentItems(/* ... */);
+            var query = _db.Users.AsQueryable();
             
-            return new QueryResponseDto<ListResultDto<ContentItemDto>>(
-                new ListResultDto<ContentItemDto>(items, count));
+            if (request.IsAdmin.HasValue)
+            {
+                query = query.Where(p => p.IsAdmin == request.IsAdmin.Value);
+            }
+            
+            var items = await query
+                .Select(p => new UserDto
+                {
+                    Id = p.Id,
+                    FirstName = p.FirstName,
+                    LastName = p.LastName,
+                    EmailAddress = p.EmailAddress
+                })
+                .ToListAsync(cancellationToken);
+            
+            var count = await query.CountAsync(cancellationToken);
+            
+            return new QueryResponseDto<ListResultDto<UserDto>>(
+                new ListResultDto<UserDto>(items, count));
         }
     }
 }
 ```
 
 **Rules:**
-- One file per use case (e.g., `CreateContentItem.cs`)
+- One file per use case (e.g., `CreateUser.cs`)
 - Nested classes: `Command`/`Query`, `Validator`, `Handler`
 - Commands return `CommandResponseDto<T>`
 - Queries return `QueryResponseDto<T>`
@@ -580,7 +593,7 @@ public class GetContentItems
 - Inject dependencies in Handler constructor (not Command/Query)
 - Always include `CancellationToken` parameter
 - Use `ValueTask<T>` (not `Task<T>`) per Mediator library convention
-- Validators inject `IRaythaDbContext` for database lookups
+- Validators inject `IAppDbContext` for database lookups
 - Throw domain exceptions (`NotFoundException`) for invalid data
 - Use `LoggableRequest<T>` for commands that should be audited
 
@@ -609,7 +622,7 @@ Infrastructure Layer implements → Application Interfaces
 
 ```csharp
 // Defined in Application layer
-namespace Raytha.Application.Common.Interfaces;
+namespace App.Application.Common.Interfaces;
 
 public interface IFileStorageProvider
 {
@@ -619,7 +632,7 @@ public interface IFileStorageProvider
 }
 
 // Implemented in Infrastructure layer
-namespace Raytha.Infrastructure.FileStorage;
+namespace App.Infrastructure.FileStorage;
 
 public class LocalFileStorageProvider : IFileStorageProvider
 {
@@ -628,8 +641,8 @@ public class LocalFileStorageProvider : IFileStorageProvider
 ```
 
 **Rules:**
-- Interfaces defined in `Raytha.Application.Common.Interfaces`
-- Implementations in `Raytha.Infrastructure`
+- Interfaces defined in `App.Application.Common.Interfaces`
+- Implementations in `App.Infrastructure`
 - Use descriptive interface names (avoid `IService` suffix)
 - Include `CancellationToken` on async methods
 - Return abstractions, not concrete types
@@ -645,9 +658,9 @@ public class LocalFileStorageProvider : IFileStorageProvider
 ```csharp
 public class Handler : IRequestHandler<Command, CommandResponseDto<ShortGuid>>
 {
-    private readonly IRaythaDbContext _db;
+    private readonly IAppDbContext _db;
 
-    public Handler(IRaythaDbContext db)
+    public Handler(IAppDbContext db)
     {
         _db = db;
     }
@@ -657,24 +670,24 @@ public class Handler : IRequestHandler<Command, CommandResponseDto<ShortGuid>>
         CancellationToken cancellationToken)
     {
         // Use interface methods
-        var contentType = await _db.ContentTypes
-            .Include(p => p.ContentTypeFields)
-            .FirstOrDefaultAsync(p => p.DeveloperName == request.ContentTypeDeveloperName, cancellationToken);
+        var user = await _db.Users
+            .Include(p => p.Roles)
+            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
         
-        if (contentType == null)
-            throw new NotFoundException("ContentType", request.ContentTypeDeveloperName);
+        if (user == null)
+            throw new NotFoundException("User", request.Id);
         
-        var entity = new ContentItem { /* ... */ };
-        _db.ContentItems.Add(entity);
+        user.FirstName = request.FirstName;
+        user.LastName = request.LastName;
         await _db.SaveChangesAsync(cancellationToken);
         
-        return new CommandResponseDto<ShortGuid>(entity.Id);
+        return new CommandResponseDto<ShortGuid>(user.Id);
     }
 }
 ```
 
 **Rules:**
-- Inject `IRaythaDbContext` (interface), not `RaythaDbContext` (concrete)
+- Inject `IAppDbContext` (interface), not `AppDbContext` (concrete)
 - Use `async` methods (`FirstOrDefaultAsync`, `ToListAsync`)
 - Include `CancellationToken` in all async calls
 - Use `Include()` for eager loading related entities
@@ -687,22 +700,26 @@ public class Handler : IRequestHandler<Command, CommandResponseDto<ShortGuid>>
 **Good Example:**
 
 ```csharp
-public class ContentItemConfiguration : IEntityTypeConfiguration<ContentItem>
+public class UserConfiguration : IEntityTypeConfiguration<User>
 {
-    public void Configure(EntityTypeBuilder<ContentItem> builder)
+    public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.HasKey(e => e.Id);
         
-        builder.Property(e => e._DraftContent)
-            .HasColumnName("DraftContent")
-            .HasColumnType("nvarchar(max)");
+        builder.Property(e => e.EmailAddress)
+            .IsRequired()
+            .HasMaxLength(255);
         
-        builder.HasOne(e => e.ContentType)
+        builder.HasIndex(e => e.EmailAddress)
+            .IsUnique();
+        
+        builder.HasOne(e => e.AuthenticationScheme)
             .WithMany()
-            .HasForeignKey(e => e.ContentTypeId)
+            .HasForeignKey(e => e.AuthenticationSchemeId)
             .OnDelete(DeleteBehavior.Restrict);
         
-        builder.HasIndex(e => e.ContentTypeId);
+        builder.HasMany(e => e.Roles)
+            .WithMany();
     }
 }
 ```
@@ -718,13 +735,8 @@ public class ContentItemConfiguration : IEntityTypeConfiguration<ContentItem>
 
 ### Migrations
 
-**Raytha uses two migration projects:**
-- `Raytha.Migrations.SqlServer` – SQL Server migrations
-- `Raytha.Migrations.Postgres` – PostgreSQL migrations
-
 **Rules:**
 - **Never** edit generated migration files manually (except for custom SQL)
-- **Always** generate migrations for both databases
 - **Test** migrations on local database before committing
 - Include migration SQL script in `db/` folder for production deployments
 - Use descriptive migration names (e.g., `v1_4_1`)
@@ -733,14 +745,11 @@ public class ContentItemConfiguration : IEntityTypeConfiguration<ContentItem>
 **Commands:**
 
 ```bash
-# Add migration (SQL Server)
-dotnet ef migrations add v1_5_0 --project src/Raytha.Migrations.SqlServer --startup-project src/Raytha.Web
-
-# Add migration (Postgres)
-dotnet ef migrations add v1_5_0 --project src/Raytha.Migrations.Postgres --startup-project src/Raytha.Web
+# Add migration
+dotnet ef migrations add MigrationName --project src/App.Infrastructure --startup-project src/App.Web
 
 # Generate SQL script
-dotnet ef migrations script --project src/Raytha.Migrations.SqlServer --startup-project src/Raytha.Web --output db/SqlServer/v1_4_1_to_v1_5_0.sql
+dotnet ef migrations script --project src/App.Infrastructure --startup-project src/App.Web --output db/migration.sql
 ```
 
 ### Query Performance
@@ -749,30 +758,32 @@ dotnet ef migrations script --project src/Raytha.Migrations.SqlServer --startup-
 
 ```csharp
 // ✅ Use AsNoTracking for read-only queries
-var items = await _db.ContentItems
+var users = await _db.Users
     .AsNoTracking()
-    .Where(p => p.ContentTypeId == contentTypeId)
+    .Where(p => p.IsAdmin == true)
     .ToListAsync(cancellationToken);
 
 // ✅ Use Select projection to avoid loading full entities
-var items = await _db.ContentItems
-    .Where(p => p.ContentTypeId == contentTypeId)
-    .Select(p => new ContentItemDto
+var users = await _db.Users
+    .Where(p => p.IsActive == true)
+    .Select(p => new UserDto
     {
         Id = p.Id,
-        PrimaryField = p.PrimaryField,
+        FirstName = p.FirstName,
+        LastName = p.LastName,
+        EmailAddress = p.EmailAddress,
     })
     .ToListAsync(cancellationToken);
 
 // ✅ Use Include for related data needed in one query
-var contentType = await _db.ContentTypes
-    .Include(p => p.ContentTypeFields)
+var user = await _db.Users
+    .Include(p => p.Roles)
     .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
 // ❌ Avoid N+1 queries (loading related data in loop)
-foreach (var item in items)
+foreach (var user in users)
 {
-    var contentType = await _db.ContentTypes.FindAsync(item.ContentTypeId); // BAD
+    var roles = await _db.Roles.Where(r => r.Users.Contains(user)).ToListAsync(); // BAD
 }
 ```
 
@@ -823,11 +834,10 @@ public static class ConfigureServices
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddMediator(options =>
         {
-            options.Namespace = "Raytha.Application.Mediator";
+            options.Namespace = "App.Application.Mediator";
             options.ServiceLifetime = ServiceLifetime.Scoped;
         });
         services.AddSingleton(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
-        services.AddScoped<FieldValueConverter>();
         return services;
     }
 }
@@ -839,9 +849,9 @@ public static class ConfigureServices
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<RaythaDbContext>(options => { /* ... */ });
-        services.AddScoped<IRaythaDbContext>(provider => 
-            provider.GetRequiredService<RaythaDbContext>());
+        services.AddDbContext<AppDbContext>(options => { /* ... */ });
+        services.AddScoped<IAppDbContext>(provider => 
+            provider.GetRequiredService<AppDbContext>());
         services.AddScoped<IFileStorageProvider, LocalFileStorageProvider>();
         return services;
     }
@@ -868,8 +878,8 @@ public void ConfigureServices(IServiceCollection services)
 | Lifetime | Use Case | Examples |
 |----------|----------|----------|
 | **Singleton** | Stateless, thread-safe services | `ICurrentOrganizationConfiguration`, `IFileStorageProviderSettings`, `ICurrentVersion`, Pipeline behaviors |
-| **Scoped** | Per-request state, DbContext | `IRaythaDbContext`, `ICurrentUser`, `ICurrentOrganization`, `IEmailer`, MediatR handlers |
-| **Transient** | Lightweight, stateless, created each time | `IBackgroundTaskDb`, `IRaythaRawDbInfo` |
+| **Scoped** | Per-request state, DbContext | `IAppDbContext`, `ICurrentUser`, `ICurrentOrganization`, `IEmailer`, MediatR handlers |
+| **Transient** | Lightweight, stateless, created each time | `IBackgroundTaskDb`, `IAppRawDbInfo` |
 
 **Rules:**
 - **DbContext is always Scoped** (EF Core requirement)
@@ -892,7 +902,7 @@ public void ConfigureServices(IServiceCollection services)
 - `ILogger Logger` – Logging
 
 **Do NOT inject directly in PageModel:**
-- `IRaythaDbContext` – Use MediatR instead
+- `IAppDbContext` – Use MediatR instead
 - `HttpClient` – Encapsulate in service
 - Configuration values – Use `IOptions<T>` pattern
 
@@ -906,8 +916,8 @@ public class Edit : BaseAdminPageModel
     public async Task<IActionResult> OnGet(string id)
     {
         // Access via lazy-loaded properties
-        var response = await Mediator.Send(new GetContentItemById.Query { Id = id });
-        Logger.LogInformation("Loaded content item {Id}", id);
+        var response = await Mediator.Send(new GetUserById.Query { Id = id });
+        Logger.LogInformation("Loaded user {Id}", id);
         return Page();
     }
 }
@@ -924,40 +934,29 @@ public class Edit : BaseAdminPageModel
 ```csharp
 public class Validator : AbstractValidator<Command>
 {
-    public Validator(IRaythaDbContext db)
+    public Validator(IAppDbContext db)
     {
-        RuleFor(x => x.ContentTypeDeveloperName)
+        RuleFor(x => x.EmailAddress)
             .NotEmpty()
-            .WithMessage("Content type is required.");
+            .EmailAddress()
+            .WithMessage("Email address is required.");
         
-        RuleFor(x => x.TemplateId)
-            .NotEqual(ShortGuid.Empty)
-            .WithMessage("Template is required.");
+        RuleFor(x => x.FirstName)
+            .NotEmpty()
+            .MaximumLength(255)
+            .WithMessage("First name is required.");
         
         RuleFor(x => x).Custom((request, context) =>
         {
             // Complex validation with database lookups
-            var contentType = db.ContentTypes
-                .FirstOrDefault(p => p.DeveloperName == request.ContentTypeDeveloperName);
+            var existingUser = db.Users
+                .FirstOrDefault(p => p.EmailAddress == request.EmailAddress);
             
-            if (contentType == null)
+            if (existingUser != null)
             {
                 context.AddFailure(Constants.VALIDATION_SUMMARY, 
-                    $"Content type '{request.ContentTypeDeveloperName}' not found.");
+                    $"A user with email '{request.EmailAddress}' already exists.");
                 return;
-            }
-            
-            // Field-level validation
-            foreach (var field in request.Content)
-            {
-                var fieldDef = contentType.ContentTypeFields
-                    .FirstOrDefault(p => p.DeveloperName == field.Key);
-                
-                if (fieldDef == null)
-                {
-                    context.AddFailure(field.Key, 
-                        $"Field '{field.Key}' is not recognized.");
-                }
             }
         });
     }
@@ -966,7 +965,7 @@ public class Validator : AbstractValidator<Command>
 
 **Rules:**
 - One `Validator` class per Command/Query
-- Validators can inject `IRaythaDbContext` for database lookups
+- Validators can inject `IAppDbContext` for database lookups
 - Use `Constants.VALIDATION_SUMMARY` for general errors (displayed at top of form)
 - Use property names for field-specific errors
 - Complex validation in `Custom()` method
@@ -979,7 +978,7 @@ public class Validator : AbstractValidator<Command>
 
 ```csharp
 // Domain/Application exceptions (these are expected)
-throw new NotFoundException("ContentType", contentTypeDeveloperName);
+throw new NotFoundException("User", userId);
 throw new UnauthorizedAccessException("User does not have permission.");
 throw new InvalidApiKeyException();
 ```
@@ -1003,7 +1002,7 @@ else
 - Log exceptions via `ILogger` in handlers
 - Never expose stack traces to users (only in Development mode)
 - API responses return JSON error objects
-- Web responses redirect to error pages (`/raytha/error/404`)
+- Web responses redirect to error pages (`/admin/error/404`)
 
 ### Logging
 
@@ -1011,15 +1010,15 @@ else
 
 ```csharp
 // Structured logging with context
-Logger.LogInformation("Loaded content item {ContentItemId} for user {UserId}", 
-    contentItemId, CurrentUser.UserId);
+Logger.LogInformation("Loaded user {UserId} for admin {AdminId}", 
+    userId, CurrentUser.UserId);
 
 // Warning for unexpected but handled cases
-Logger.LogWarning("Template {TemplateId} not found for content type {ContentTypeDeveloperName}", 
-    request.TemplateId, request.ContentTypeDeveloperName);
+Logger.LogWarning("Role {RoleId} not found for user {UserId}", 
+    request.RoleId, request.UserId);
 
 // Error for exceptions
-Logger.LogError(exception, "Failed to save content item {ContentItemId}", contentItemId);
+Logger.LogError(exception, "Failed to save user {UserId}", userId);
 ```
 
 **Rules:**
@@ -1050,7 +1049,7 @@ Logger.LogError(exception, "Failed to save content item {ContentItemId}", conten
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=raytha;Username=postgres;Password=***"
+    "DefaultConnection": "Host=localhost;Database=app;Username=postgres;Password=***"
   },
   "PATHBASE": "",
   "ENFORCE_HTTPS": "true",
@@ -1066,7 +1065,7 @@ Logger.LogError(exception, "Failed to save content item {ContentItemId}", conten
 ```bash
 # Production deployment
 ASPNETCORE_ENVIRONMENT=Production
-ConnectionStrings__DefaultConnection="Host=prod-db;Database=raytha;Username=app;Password=***"
+ConnectionStrings__DefaultConnection="Host=prod-db;Database=app;Username=app;Password=***"
 SMTP__HOST=smtp.sendgrid.net
 SMTP__USERNAME=apikey
 SMTP__PASSWORD=***
@@ -1134,7 +1133,7 @@ public class Emailer : IEmailer
 
 ### Core Principle
 
-**Raytha is server-side rendered.** We do **not** use JavaScript frameworks (React, Vue, Angular).
+**The application is server-side rendered.** We do **not** use JavaScript frameworks (React, Vue, Angular).
 
 ### When JavaScript is Allowed
 
@@ -1163,41 +1162,44 @@ wwwroot/
       net.js           # AJAX helpers
       validation.js    # Client-side validation
     pages/             # Page-specific scripts
-      content-items/
-        edit.js        # Content item edit page
-        wysiwyg.js     # WYSIWYG field
-        attachment.js  # File upload field
+      users/
+        edit.js        # User edit page
+      email-templates/
+        edit.js        # Email template editor
     shared/            # Shared components
       confirm-dialog.js
-      field-choices.js
 ```
 
 **Good Example (ES6 Module):**
 
 ```javascript
 /**
- * Content Items - Edit Page
- * Initializes all field types for content item editing
+ * Users - Edit Page
+ * Initializes user edit form interactions
  */
 
 import { ready } from '/js/core/events.js';
-import { initAllWysiwygFields } from './wysiwyg.js';
-import { initAllAttachmentFields } from './attachment.js';
 
 /**
- * Initialize all content item fields
+ * Initialize user edit page
  */
 function init() {
-    const config = window.RaythaContentItemsConfig || {};
+    const config = window.AppUsersConfig || {};
     
-    console.log('Initializing content items edit page...', config);
+    console.log('Initializing user edit page...', config);
     
-    const wysiwygFields = document.querySelectorAll('[data-field-type="wysiwyg"]');
-    if (wysiwygFields.length > 0) {
-        initAllWysiwygFields(config);
+    // Initialize form interactions
+    const emailInput = document.querySelector('[name="EmailAddress"]');
+    if (emailInput) {
+        emailInput.addEventListener('blur', validateEmail);
     }
     
-    console.log('Content items edit page initialized.');
+    console.log('User edit page initialized.');
+}
+
+function validateEmail(event) {
+    const email = event.target.value;
+    // Client-side validation logic
 }
 
 ready(init);
@@ -1251,11 +1253,11 @@ ready(() => {
 
 ### CSS Usage
 
-**Raytha uses Bootstrap 5:**
+**The application uses Bootstrap 5:**
 - Use Bootstrap utility classes (`mb-3`, `btn btn-primary`)
 - Custom CSS in `/wwwroot/css/` for specific needs
 - Avoid inline styles (use classes)
-- Prefix custom classes with `raytha-` to avoid conflicts
+- Prefix custom classes with `app-` to avoid conflicts
 
 ---
 
@@ -1264,21 +1266,21 @@ ready(() => {
 ### Testing Strategy
 
 **Layers:**
-- **Unit Tests** – Domain logic, value objects, validators (in `Raytha.Domain.UnitTests`)
+- **Unit Tests** – Domain logic, value objects, validators (in `App.Domain.UnitTests`)
 - **Integration Tests** – Handlers with database (not yet comprehensive)
 - **Manual Testing** – Razor Pages and user workflows
 
 **Current State:**
-- Domain unit tests exist (`/tests/Raytha.Domain.UnitTests`)
+- Domain unit tests exist (`/tests/App.Domain.UnitTests`)
 - Integration tests are minimal
 - Focus on expanding test coverage incrementally
 
 ### What Must Be Tested
 
 **Priority 1 (Always):**
-- Domain value objects (`BaseFieldType`, `SortOrder`, etc.)
+- Domain value objects (`SortOrder`, etc.)
 - Complex validators with business rules
-- Critical commands (create/update content items, users)
+- Critical commands (create/update users, roles)
 - Authorization logic
 
 **Priority 2 (Should):**
@@ -1296,27 +1298,27 @@ ready(() => {
 
 ```csharp
 [Test]
-public void BaseFieldType_From_ValidDeveloperName_ReturnsCorrectType()
+public void SortOrder_From_ValidDeveloperName_ReturnsCorrectType()
 {
     // Arrange
-    string developerName = "single_line_text";
+    string developerName = "asc";
     
     // Act
-    var fieldType = BaseFieldType.From(developerName);
+    var sortOrder = SortOrder.From(developerName);
     
     // Assert
-    Assert.That(fieldType, Is.EqualTo(BaseFieldType.SingleLineText));
-    Assert.That(fieldType.DeveloperName, Is.EqualTo("single_line_text"));
+    Assert.That(sortOrder, Is.EqualTo(SortOrder.Ascending));
+    Assert.That(sortOrder.DeveloperName, Is.EqualTo("asc"));
 }
 
 [Test]
-public void BaseFieldType_From_InvalidDeveloperName_ThrowsException()
+public void SortOrder_From_InvalidDeveloperName_ThrowsException()
 {
     // Arrange
-    string developerName = "invalid_type";
+    string developerName = "invalid";
     
     // Act & Assert
-    Assert.Throws<UnsupportedFieldTypeException>(() => BaseFieldType.From(developerName));
+    Assert.Throws<SortOrderNotFoundException>(() => SortOrder.From(developerName));
 }
 ```
 
@@ -1325,7 +1327,7 @@ public void BaseFieldType_From_InvalidDeveloperName_ThrowsException()
 - Arrange-Act-Assert pattern
 - Test happy path + failure cases
 - Descriptive test names (method_scenario_expectedResult)
-- No database access in unit tests (mock `IRaythaDbContext`)
+- No database access in unit tests (mock `IAppDbContext`)
 
 ### Testing Handlers (Integration)
 
@@ -1333,16 +1335,17 @@ public void BaseFieldType_From_InvalidDeveloperName_ThrowsException()
 
 ```csharp
 [Test]
-public async Task CreateContentItem_ValidInput_ReturnsSuccess()
+public async Task CreateUser_ValidInput_ReturnsSuccess()
 {
     // Arrange
     using var context = CreateDbContext();
-    var handler = new CreateContentItem.Handler(context);
-    var command = new CreateContentItem.Command
+    var handler = new CreateUser.Handler(context);
+    var command = new CreateUser.Command
     {
-        ContentTypeDeveloperName = "page",
-        TemplateId = testTemplateId,
-        Content = new Dictionary<string, dynamic> { { "title", "Test" } }
+        FirstName = "John",
+        LastName = "Doe",
+        EmailAddress = "john.doe@example.com",
+        IsAdmin = false
     };
     
     // Act
@@ -1389,7 +1392,7 @@ RuleFor(x => x.EmailAddress)
 **Pattern:**
 
 ```csharp
-[Authorize(Policy = BuiltInContentTypePermission.CONTENT_TYPE_EDIT_PERMISSION)]
+[Authorize]
 public class Edit : BaseAdminPageModel
 {
     // Enforced at PageModel level
@@ -1398,8 +1401,8 @@ public class Edit : BaseAdminPageModel
 // Or check programmatically
 var authResult = await AuthorizationService.AuthorizeAsync(
     User, 
-    contentTypeDeveloperName, 
-    ContentItemOperations.Edit);
+    resource, 
+    policy);
 
 if (!authResult.Succeeded)
 {
@@ -1438,13 +1441,13 @@ if (!authResult.Succeeded)
 
 ```csharp
 // ✅ Use AsNoTracking for read-only
-var items = await _db.ContentItems
+var users = await _db.Users
     .AsNoTracking()
     .ToListAsync(cancellationToken);
 
 // ✅ Use Select projection
-var items = await _db.ContentItems
-    .Select(p => new ContentItemDto { Id = p.Id, Title = p.Title })
+var users = await _db.Users
+    .Select(p => new UserDto { Id = p.Id, FirstName = p.FirstName, LastName = p.LastName })
     .ToListAsync(cancellationToken);
 
 // ✅ Use IndexOf/Contains on collections (avoid LINQ in loops)
@@ -1460,7 +1463,7 @@ if (allowedValues.Contains(value))  // Fast
 
 #### Caching
 
-**Raytha uses IMemoryCache for read-mostly data:**
+**The application uses IMemoryCache for read-mostly data:**
 
 ```csharp
 // Cache organization settings (rarely change)
@@ -1484,8 +1487,8 @@ var settings = await cache.GetOrCreateAsync("org_settings", async entry =>
 **Structured Logging:**
 
 ```csharp
-Logger.LogInformation("Content item {ContentItemId} created by user {UserId}", 
-    contentItemId, CurrentUser.UserId);
+Logger.LogInformation("User {UserId} created by admin {AdminId}", 
+    userId, CurrentUser.UserId);
 ```
 
 **Rules:**
@@ -1496,7 +1499,7 @@ Logger.LogInformation("Content item {ContentItemId} created by user {UserId}",
 
 #### Health Checks
 
-**Raytha exposes `/healthz` endpoint:**
+**The application exposes `/healthz` endpoint:**
 
 ```json
 {
@@ -1519,7 +1522,7 @@ Logger.LogInformation("Content item {ContentItemId} created by user {UserId}",
 
 #### Audit Logs
 
-**Raytha uses AuditBehavior pipeline:**
+**The application uses AuditBehavior pipeline:**
 
 ```csharp
 public class AuditBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
@@ -1549,7 +1552,7 @@ public class AuditBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TR
 **✅ Do:**
 
 ```csharp
-[Authorize(Policy = BuiltInContentTypePermission.CONTENT_TYPE_EDIT_PERMISSION)]
+[Authorize]
 public class Create : BaseAdminPageModel
 {
     [BindProperty]
@@ -1559,12 +1562,11 @@ public class Create : BaseAdminPageModel
     {
         SetBreadcrumbs(/* ... */);
         
-        var webTemplates = await Mediator.Send(new GetWebTemplates.Query { /* ... */ });
+        var roles = await Mediator.Send(new GetRoles.Query { /* ... */ });
         
         Form = new FormModel
         {
-            AvailableTemplates = webTemplates,
-            FieldValues = BuildFieldValues(),
+            AvailableRoles = roles.Result.Items,
         };
         
         return Page();
@@ -1572,9 +1574,12 @@ public class Create : BaseAdminPageModel
 
     public async Task<IActionResult> OnPost()
     {
-        var command = new CreateContentItem.Command
+        var command = new CreateUser.Command
         {
-            Content = MapFromFieldValueModel(Form.FieldValues),
+            FirstName = Form.FirstName,
+            LastName = Form.LastName,
+            EmailAddress = Form.EmailAddress,
+            IsAdmin = Form.IsAdmin,
         };
         
         var response = await Mediator.Send(command);
@@ -1592,8 +1597,11 @@ public class Create : BaseAdminPageModel
     
     public record FormModel
     {
-        public string TemplateId { get; set; }
-        public FieldValueViewModel[] FieldValues { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string EmailAddress { get; set; }
+        public bool IsAdmin { get; set; }
+        public List<RoleDto> AvailableRoles { get; set; } = new();
     }
 }
 ```
@@ -1604,9 +1612,9 @@ public class Create : BaseAdminPageModel
 // ❌ Direct database access in PageModel
 public class Create : BaseAdminPageModel
 {
-    private readonly RaythaDbContext _db;  // BAD
+    private readonly AppDbContext _db;  // BAD
     
-    public Create(RaythaDbContext db)
+    public Create(AppDbContext db)
     {
         _db = db;
     }
@@ -1614,17 +1622,19 @@ public class Create : BaseAdminPageModel
     public async Task<IActionResult> OnPost()
     {
         // ❌ Business logic in PageModel
-        var contentType = await _db.ContentTypes.FindAsync(Form.ContentTypeId);
-        if (contentType == null)
-            return NotFound();
+        var existingUser = await _db.Users
+            .FirstOrDefaultAsync(p => p.EmailAddress == Form.EmailAddress);
+        if (existingUser != null)
+            return BadRequest();
         
         // ❌ Direct entity manipulation
-        var entity = new ContentItem
+        var entity = new User
         {
-            DraftContent = Form.Content,
-            ContentTypeId = contentType.Id,
+            FirstName = Form.FirstName,
+            LastName = Form.LastName,
+            EmailAddress = Form.EmailAddress,
         };
-        _db.ContentItems.Add(entity);
+        _db.Users.Add(entity);
         await _db.SaveChangesAsync();  // BAD
         
         return RedirectToPage("Edit", new { id = entity.Id });
@@ -1637,29 +1647,32 @@ public class Create : BaseAdminPageModel
 **✅ Do:**
 
 ```csharp
-public class CreateContentItem
+public class CreateUser
 {
     public record Command : LoggableRequest<CommandResponseDto<ShortGuid>>
     {
-        public string ContentTypeDeveloperName { get; init; } = string.Empty;
-        public IDictionary<string, dynamic> Content { get; init; }
+        public string FirstName { get; init; } = string.Empty;
+        public string LastName { get; init; } = string.Empty;
+        public string EmailAddress { get; init; } = string.Empty;
+        public bool IsAdmin { get; init; }
     }
 
     public class Validator : AbstractValidator<Command>
     {
-        public Validator(IRaythaDbContext db)
+        public Validator(IAppDbContext db)
         {
-            RuleFor(x => x.ContentTypeDeveloperName)
+            RuleFor(x => x.EmailAddress)
                 .NotEmpty()
-                .WithMessage("Content type is required.");
+                .EmailAddress()
+                .WithMessage("Email address is required.");
         }
     }
 
     public class Handler : IRequestHandler<Command, CommandResponseDto<ShortGuid>>
     {
-        private readonly IRaythaDbContext _db;
+        private readonly IAppDbContext _db;
 
-        public Handler(IRaythaDbContext db)
+        public Handler(IAppDbContext db)
         {
             _db = db;
         }
@@ -1668,17 +1681,15 @@ public class CreateContentItem
             Command request,
             CancellationToken cancellationToken)
         {
-            var contentType = await _db.ContentTypes
-                .Include(p => p.ContentTypeFields)
-                .FirstOrDefaultAsync(p => p.DeveloperName == request.ContentTypeDeveloperName, 
-                                     cancellationToken);
-            
-            if (contentType == null)
-                throw new NotFoundException("ContentType", request.ContentTypeDeveloperName);
-            
-            var entity = new ContentItem { /* ... */ };
-            _db.ContentItems.Add(entity);
-            entity.AddDomainEvent(new ContentItemCreatedEvent(entity));
+            var entity = new User 
+            { 
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                EmailAddress = request.EmailAddress,
+                IsAdmin = request.IsAdmin
+            };
+            _db.Users.Add(entity);
+            entity.AddDomainEvent(new UserCreatedEvent(entity));
             await _db.SaveChangesAsync(cancellationToken);
             
             return new CommandResponseDto<ShortGuid>(entity.Id);
@@ -1693,21 +1704,21 @@ public class CreateContentItem
 // ❌ Multiple responsibilities in one handler
 public class Handler : IRequestHandler<Command, CommandResponseDto<ShortGuid>>
 {
-    private readonly RaythaDbContext _db;  // ❌ Use interface, not concrete
+    private readonly AppDbContext _db;  // ❌ Use interface, not concrete
     private readonly IEmailer _emailer;
     private readonly IFileStorageProvider _storage;
     
     public async ValueTask<CommandResponseDto<ShortGuid>> Handle(Command request)  // ❌ Missing CancellationToken
     {
         // ❌ Validation in handler (should be in Validator)
-        if (string.IsNullOrEmpty(request.ContentTypeDeveloperName))
-            return new CommandResponseDto<ShortGuid>("ContentTypeDeveloperName", "Required");
+        if (string.IsNullOrEmpty(request.EmailAddress))
+            return new CommandResponseDto<ShortGuid>("EmailAddress", "Required");
         
         // ❌ Blocking call
-        var contentType = _db.ContentTypes.Find(request.ContentTypeId);  // Use FindAsync
+        var user = _db.Users.Find(request.Id);  // Use FindAsync
         
-        var entity = new ContentItem { /* ... */ };
-        _db.ContentItems.Add(entity);
+        var entity = new User { /* ... */ };
+        _db.Users.Add(entity);
         _db.SaveChanges();  // ❌ Use async
         
         // ❌ Side effects without error handling
@@ -1760,7 +1771,7 @@ init();
 // ❌ Global variables
 var myGlobalVar = 'bad';
 
-// ❌ jQuery (not used in Raytha)
+// ❌ jQuery (not used in the application)
 $(document).ready(function() {
     $('.my-button').click(function() {
         // ...
@@ -1909,18 +1920,18 @@ public class ValueObjectName : ValueObject
 
 ## Conclusion
 
-This document is the **single source of truth** for Raytha's .NET 10 architecture and coding standards. When in doubt:
+This document is the **single source of truth** for the .NET 10 architecture and coding standards. When in doubt:
 
 1. Follow patterns from this document
 2. Look for similar existing code in the repo
 3. Ask for guidance if unclear
 4. Update this document when patterns evolve
 
-**Remember:** These standards exist to make Raytha **maintainable, testable, and evolvable** for years to come. Follow them consistently, and the codebase will remain a joy to work with.
+**Remember:** These standards exist to make the application **maintainable, testable, and evolvable** for years to come. Follow them consistently, and the codebase will remain a joy to work with.
 
 ---
 
 **Document Version:** 1.0  
 **Last Updated:** November 21, 2025  
-**Maintained by:** Raytha Core Team
+**Maintained by:** Development Team
 
