@@ -4,6 +4,7 @@ using App.Application.Common.Models;
 using CSharpVitamins;
 using FluentValidation;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.UserGroups.Commands;
 

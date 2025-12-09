@@ -5,6 +5,7 @@ using App.Domain.Entities;
 using CSharpVitamins;
 using FluentValidation;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.Roles.Commands;
 

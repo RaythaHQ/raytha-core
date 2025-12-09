@@ -2,6 +2,7 @@ using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.MediaItems.Queries;
 

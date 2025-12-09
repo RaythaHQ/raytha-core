@@ -5,6 +5,7 @@ using App.Application.Common.Utils;
 using CSharpVitamins;
 using FluentValidation;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.AuthenticationSchemes.Commands;
 

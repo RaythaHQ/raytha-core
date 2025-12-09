@@ -4,6 +4,7 @@ using App.Application.Common.Utils;
 using App.Domain.ValueObjects;
 using CSharpVitamins;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.Admins.Queries;
 

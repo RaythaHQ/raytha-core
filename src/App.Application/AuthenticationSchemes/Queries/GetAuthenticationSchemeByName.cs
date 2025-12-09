@@ -4,6 +4,7 @@ using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using FluentValidation;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.AuthenticationSchemes.Queries;
 

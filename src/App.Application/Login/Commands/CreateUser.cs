@@ -8,6 +8,7 @@ using App.Domain.ValueObjects;
 using CSharpVitamins;
 using FluentValidation;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.Login.Commands;
 
