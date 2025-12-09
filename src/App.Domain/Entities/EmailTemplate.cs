@@ -40,57 +40,57 @@ public class BuiltInEmailTemplate : ValueObject
     public static BuiltInEmailTemplate AdminWelcomeEmail =>
         new(
             "[{{ CurrentOrganization.OrganizationName }}] An administrator has created your account",
-            "raytha_email_admin_welcome",
+            "email_admin_welcome",
             false
         );
     public static BuiltInEmailTemplate AdminPasswordChangedEmail =>
         new(
             "[{{ CurrentOrganization.OrganizationName }}] Your password has been changed",
-            "raytha_email_admin_passwordchanged",
+            "email_admin_passwordchanged",
             false
         );
     public static BuiltInEmailTemplate AdminPasswordResetEmail =>
         new(
             "[{{ CurrentOrganization.OrganizationName }}] Your password has been reset by an administrator",
-            "raytha_email_admin_passwordreset",
+            "email_admin_passwordreset",
             false
         );
 
     public static BuiltInEmailTemplate LoginBeginLoginWithMagicLinkEmail =>
         new(
             "[{{ CurrentOrganization.OrganizationName }}] Website login access link",
-            "raytha_email_login_beginloginwithmagiclink",
+            "email_login_beginloginwithmagiclink",
             false
         );
     public static BuiltInEmailTemplate LoginBeginForgotPasswordEmail =>
         new(
             "[{{ CurrentOrganization.OrganizationName }}] Password recovery",
-            "raytha_email_login_beginforgotpassword",
+            "email_login_beginforgotpassword",
             false
         );
     public static BuiltInEmailTemplate LoginCompletedForgotPasswordEmail =>
         new(
             "[{{ CurrentOrganization.OrganizationName }}] Your password has been recovered",
-            "raytha_email_login_completedforgotpassword",
+            "email_login_completedforgotpassword",
             false
         );
 
     public static BuiltInEmailTemplate UserWelcomeEmail =>
         new(
             "[{{ CurrentOrganization.OrganizationName }}] An administrator has created your account",
-            "raytha_email_user_welcome",
+            "email_user_welcome",
             false
         );
     public static BuiltInEmailTemplate UserPasswordChangedEmail =>
         new(
             "[{{ CurrentOrganization.OrganizationName }}] Your password has been changed",
-            "raytha_email_user_passwordchanged",
+            "email_user_passwordchanged",
             false
         );
     public static BuiltInEmailTemplate UserPasswordResetEmail =>
         new(
             "[{{ CurrentOrganization.OrganizationName }}] Your password has been reset by an administrator",
-            "raytha_email_user_passwordreset",
+            "email_user_passwordreset",
             false
         );
 

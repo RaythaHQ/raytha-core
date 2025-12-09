@@ -7,15 +7,15 @@ namespace App.Domain.UnitTests.ValueObjects;
 public class BuiltInEmailTemplateTests
 {
     [Test]
-    [TestCase("raytha_email_admin_welcome")]
-    [TestCase("raytha_email_admin_passwordchanged")]
-    [TestCase("raytha_email_admin_passwordreset")]
-    [TestCase("raytha_email_login_beginloginwithmagiclink")]
-    [TestCase("raytha_email_login_beginforgotpassword")]
-    [TestCase("raytha_email_login_completedforgotpassword")]
-    [TestCase("raytha_email_user_welcome")]
-    [TestCase("raytha_email_user_passwordchanged")]
-    [TestCase("raytha_email_user_passwordreset")]
+    [TestCase("email_admin_welcome")]
+    [TestCase("email_admin_passwordchanged")]
+    [TestCase("email_admin_passwordreset")]
+    [TestCase("email_login_beginloginwithmagiclink")]
+    [TestCase("email_login_beginforgotpassword")]
+    [TestCase("email_login_completedforgotpassword")]
+    [TestCase("email_user_welcome")]
+    [TestCase("email_user_passwordchanged")]
+    [TestCase("email_user_passwordreset")]
     [Parallelizable(ParallelScope.All)]
     public void ShouldReturnCorrectDeveloperName(string developerName)
     {
@@ -28,13 +28,13 @@ public class BuiltInEmailTemplateTests
     {
         string type = BuiltInEmailTemplate.AdminWelcomeEmail;
 
-        type.Should().Be("raytha_email_admin_welcome");
+        type.Should().Be("email_admin_welcome");
     }
 
     [Test]
     public void ShouldPerformExplicitConversionGivenSupportedType()
     {
-        var type = (BuiltInEmailTemplate)"raytha_email_admin_welcome";
+        var type = (BuiltInEmailTemplate)"email_admin_welcome";
 
         type.Should().Be(BuiltInEmailTemplate.AdminWelcomeEmail);
     }
