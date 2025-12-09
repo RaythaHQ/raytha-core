@@ -47,6 +47,10 @@ Flexible file storage with multiple provider options:
 - Responsive design patterns
 - Clean, professional admin interface
 
+### Project Governance & Workflow
+- **GitHub SpecKit** for lightweight specs, plans, tasks, and a project constitution
+- `.specify/` directory with SpecKit templates and the App Constitution for architecture rules
+
 ### Developer Experience
 - "Cursor-ready" codebase optimized for AI-assisted development
 - Comprehensive coding standards and conventions
@@ -154,6 +158,9 @@ See `src/App.Application/Common/Utils/FileStorageUtility.cs` for all configurati
 For architecture rules, see the [App Constitution](.specify/memory/constitution.md).  
 For detailed coding standards, patterns, and examples, see
 [docs/architecture-standards.md](docs/architecture-standards.md).
+
+This repository is configured for **GitHub SpecKit**; see the `.specify/` folder
+for templates (plans, specs, tasks) and the project constitution.
 
 ## 🤝 Contributing
 
