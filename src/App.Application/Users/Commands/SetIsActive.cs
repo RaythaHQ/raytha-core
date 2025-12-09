@@ -1,10 +1,10 @@
-﻿using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.Users.Commands;
 
@@ -32,7 +32,9 @@ public class SetIsActive
                             return;
                         }
 
-                        var entity = db.Users.FirstOrDefault(p => p.Id == request.Id.Guid);
+                        var entity = db
+                            .Users.AsNoTracking()
+                            .FirstOrDefault(p => p.Id == request.Id.Guid);
                         if (entity == null)
                             throw new NotFoundException("User", request.Id);
 

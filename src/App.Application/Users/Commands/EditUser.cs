@@ -1,11 +1,11 @@
-﻿using CSharpVitamins;
-using FluentValidation;
-using Mediator;
-using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Domain.Entities;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.Users.Commands;
 
@@ -30,7 +30,9 @@ public class EditUser
                 .Custom(
                     (request, context) =>
                     {
-                        var entity = db.Users.FirstOrDefault(p => p.Id == request.Id.Guid);
+                        var entity = db
+                            .Users.AsNoTracking()
+                            .FirstOrDefault(p => p.Id == request.Id.Guid);
 
                         if (entity == null)
                             throw new NotFoundException("User", request.Id);
@@ -38,9 +40,9 @@ public class EditUser
                         if (request.EmailAddress.ToLower() != entity.EmailAddress.ToLower())
                         {
                             var emailAddressToCheck = request.EmailAddress.ToLower();
-                            var doesAnotherEmailExist = db.Users.Any(p =>
-                                p.EmailAddress.ToLower() == emailAddressToCheck
-                            );
+                            var doesAnotherEmailExist = db
+                                .Users.AsNoTracking()
+                                .Any(p => p.EmailAddress.ToLower() == emailAddressToCheck);
                             if (doesAnotherEmailExist)
                             {
                                 context.AddFailure(

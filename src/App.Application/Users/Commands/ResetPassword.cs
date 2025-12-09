@@ -1,13 +1,13 @@
-﻿using System.Text.Json.Serialization;
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
+using System.Text.Json.Serialization;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Events;
 using App.Domain.ValueObjects;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.Users.Commands;
 
@@ -52,10 +52,12 @@ public class ResetPassword
                             return;
                         }
 
-                        var authScheme = db.AuthenticationSchemes.First(p =>
-                            p.AuthenticationSchemeType
-                            == AuthenticationSchemeType.EmailAndPassword.DeveloperName
-                        );
+                        var authScheme = db
+                            .AuthenticationSchemes.AsNoTracking()
+                            .First(p =>
+                                p.AuthenticationSchemeType
+                                == AuthenticationSchemeType.EmailAndPassword.DeveloperName
+                            );
 
                         if (!authScheme.IsEnabledForUsers)
                         {
@@ -66,7 +68,9 @@ public class ResetPassword
                             return;
                         }
 
-                        var entity = db.Users.FirstOrDefault(p => p.Id == request.Id.Guid);
+                        var entity = db
+                            .Users.AsNoTracking()
+                            .FirstOrDefault(p => p.Id == request.Id.Guid);
 
                         if (entity == null)
                             throw new NotFoundException("User", request.Id);

@@ -3,17 +3,17 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Text.Json.Serialization;
 using System.Xml;
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Security;
 using App.Application.Common.Utils;
 using App.Domain.Entities;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace App.Application.Login.Commands;
 
@@ -37,9 +37,9 @@ public class LoginWithSaml
                     (request, context) =>
                     {
                         var developerName = request.DeveloperName.ToDeveloperName();
-                        var authScheme = db.AuthenticationSchemes.FirstOrDefault(p =>
-                            p.DeveloperName == developerName
-                        );
+                        var authScheme = db
+                            .AuthenticationSchemes.AsNoTracking()
+                            .FirstOrDefault(p => p.DeveloperName == developerName);
 
                         if (authScheme == null)
                         {
@@ -95,16 +95,18 @@ public class LoginWithSaml
                         User entity = null;
                         if (!string.IsNullOrEmpty(payload.NameID))
                         {
-                            entity = db.Users.FirstOrDefault(p =>
-                                p.SsoId == payload.NameID
-                                && p.AuthenticationSchemeId == authScheme.Id
-                            );
+                            entity = db
+                                .Users.AsNoTracking()
+                                .FirstOrDefault(p =>
+                                    p.SsoId == payload.NameID
+                                    && p.AuthenticationSchemeId == authScheme.Id
+                                );
                         }
                         else
                         {
-                            entity = db.Users.FirstOrDefault(p =>
-                                p.EmailAddress.ToLower() == email
-                            );
+                            entity = db
+                                .Users.AsNoTracking()
+                                .FirstOrDefault(p => p.EmailAddress.ToLower() == email);
                         }
 
                         if (entity != null)

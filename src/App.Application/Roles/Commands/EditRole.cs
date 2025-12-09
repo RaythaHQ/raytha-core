@@ -1,10 +1,10 @@
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Domain.Entities;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.Roles.Commands;
 
@@ -23,7 +23,7 @@ public class EditRole
             RuleFor(x => x.Id)
                 .Must(id =>
                 {
-                    var entity = db.Roles.FirstOrDefault(p => p.Id == id.Guid);
+                    var entity = db.Roles.AsNoTracking().FirstOrDefault(p => p.Id == id.Guid);
                     return entity == null || entity.DeveloperName != BuiltInRole.SuperAdmin;
                 })
                 .WithMessage("The Super Admin role cannot be edited.");

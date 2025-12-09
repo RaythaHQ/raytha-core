@@ -1,10 +1,10 @@
+using App.Application.Common.Exceptions;
+using App.Application.Common.Interfaces;
+using App.Application.Common.Models;
 using CSharpVitamins;
 using FluentValidation;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
-using App.Application.Common.Exceptions;
-using App.Application.Common.Interfaces;
-using App.Application.Common.Models;
 
 namespace App.Application.Admins.Commands;
 
@@ -30,7 +30,9 @@ public class EditAdmin
                 .Custom(
                     (request, context) =>
                     {
-                        var entity = db.Users.FirstOrDefault(p => p.Id == request.Id.Guid);
+                        var entity = db
+                            .Users.AsNoTracking()
+                            .FirstOrDefault(p => p.Id == request.Id.Guid);
 
                         if (entity == null)
                             throw new NotFoundException("Admin", request.Id);
@@ -38,9 +40,9 @@ public class EditAdmin
                         if (request.EmailAddress.ToLower() != entity.EmailAddress.ToLower())
                         {
                             var emailAddressToCheck = request.EmailAddress.ToLower();
-                            var doesAnotherEmailExist = db.Users.Any(p =>
-                                p.EmailAddress.ToLower() == emailAddressToCheck
-                            );
+                            var doesAnotherEmailExist = db
+                                .Users.AsNoTracking()
+                                .Any(p => p.EmailAddress.ToLower() == emailAddressToCheck);
                             if (doesAnotherEmailExist)
                             {
                                 context.AddFailure(

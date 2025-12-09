@@ -1,12 +1,12 @@
 using System.Text.Json.Serialization;
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.ValueObjects;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.AuthenticationSchemes.Commands;
 
@@ -75,26 +75,29 @@ public class EditAuthenticationScheme
                 .GreaterThanOrEqualTo(1)
                 .WithMessage("Max failed attempts must be at least 1.")
                 .When(p =>
-                    p.AuthenticationSchemeType == AuthenticationSchemeType.EmailAndPassword.DeveloperName
+                    p.AuthenticationSchemeType
+                    == AuthenticationSchemeType.EmailAndPassword.DeveloperName
                 );
             RuleFor(x => x.BruteForceProtectionWindowInSeconds)
                 .GreaterThanOrEqualTo(60)
                 .WithMessage("Window must be at least 60 seconds.")
                 .When(p =>
-                    p.AuthenticationSchemeType == AuthenticationSchemeType.EmailAndPassword.DeveloperName
+                    p.AuthenticationSchemeType
+                    == AuthenticationSchemeType.EmailAndPassword.DeveloperName
                 );
             RuleFor(x => x)
                 .Custom(
                     (request, context) =>
                     {
-                        var entity = db.AuthenticationSchemes.FirstOrDefault(p =>
-                            p.Id == request.Id.Guid
-                        );
+                        var entity = db
+                            .AuthenticationSchemes.AsNoTracking()
+                            .FirstOrDefault(p => p.Id == request.Id.Guid);
                         if (entity == null)
                             throw new NotFoundException("Authentication Scheme", request.Id);
 
                         var onlyOneAdminAuthLeft =
-                            db.AuthenticationSchemes.Count(p => p.IsEnabledForAdmins) == 1;
+                            db.AuthenticationSchemes.AsNoTracking().Count(p => p.IsEnabledForAdmins)
+                            == 1;
                         if (
                             !request.IsEnabledForAdmins
                             && entity.IsEnabledForAdmins
@@ -139,8 +142,10 @@ public class EditAuthenticationScheme
             entity.MagicLinkExpiresInSeconds = request.MagicLinkExpiresInSeconds;
             entity.JwtUseHighSecurity = request.JwtUseHighSecurity;
             entity.SamlIdpEntityId = request.SamlIdpEntityId;
-            entity.BruteForceProtectionMaxFailedAttempts = request.BruteForceProtectionMaxFailedAttempts;
-            entity.BruteForceProtectionWindowInSeconds = request.BruteForceProtectionWindowInSeconds;
+            entity.BruteForceProtectionMaxFailedAttempts =
+                request.BruteForceProtectionMaxFailedAttempts;
+            entity.BruteForceProtectionWindowInSeconds =
+                request.BruteForceProtectionWindowInSeconds;
 
             await _db.SaveChangesAsync(cancellationToken);
 

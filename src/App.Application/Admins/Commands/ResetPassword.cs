@@ -1,14 +1,14 @@
 using System.Text.Json.Serialization;
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
-using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Events;
 using App.Domain.ValueObjects;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.Admins.Commands;
 
@@ -53,10 +53,12 @@ public class ResetPassword
                             return;
                         }
 
-                        var authScheme = db.AuthenticationSchemes.First(p =>
-                            p.AuthenticationSchemeType
-                            == AuthenticationSchemeType.EmailAndPassword.DeveloperName
-                        );
+                        var authScheme = db
+                            .AuthenticationSchemes.AsNoTracking()
+                            .First(p =>
+                                p.AuthenticationSchemeType
+                                == AuthenticationSchemeType.EmailAndPassword.DeveloperName
+                            );
 
                         if (!authScheme.IsEnabledForAdmins)
                         {
@@ -68,7 +70,8 @@ public class ResetPassword
                         }
 
                         var entity = db
-                            .Users.Include(p => p.AuthenticationScheme)
+                            .Users.AsNoTracking()
+                            .Include(p => p.AuthenticationScheme)
                             .FirstOrDefault(p => p.Id == request.Id.Guid && p.IsAdmin);
 
                         if (entity == null)

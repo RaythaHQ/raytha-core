@@ -1,14 +1,14 @@
 using System.Text.Json.Serialization;
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
-using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Events;
 using App.Domain.ValueObjects;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.Login.Commands;
 
@@ -67,13 +67,16 @@ public class ChangePassword
                             return;
                         }
 
-                        var authScheme = db.AuthenticationSchemes.First(p =>
-                            p.DeveloperName
-                            == AuthenticationSchemeType.EmailAndPassword.DeveloperName
-                        );
+                        var authScheme = db
+                            .AuthenticationSchemes.AsNoTracking()
+                            .First(p =>
+                                p.DeveloperName
+                                == AuthenticationSchemeType.EmailAndPassword.DeveloperName
+                            );
 
                         var entity = db
-                            .Users.Include(p => p.AuthenticationScheme)
+                            .Users.AsNoTracking()
+                            .Include(p => p.AuthenticationScheme)
                             .FirstOrDefault(p => p.Id == request.Id.Guid);
 
                         if (entity == null)

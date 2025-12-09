@@ -1,12 +1,12 @@
 using System.Text.Json.Serialization;
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Entities;
 using App.Domain.ValueObjects;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.AuthenticationSchemes.Commands;
 
@@ -82,9 +82,9 @@ public class CreateAuthenticationScheme
                 .Must(
                     (request, developerName) =>
                     {
-                        var isDeveloperNameAlreadyExist = db.AuthenticationSchemes.Any(p =>
-                            p.DeveloperName == request.DeveloperName.ToDeveloperName()
-                        );
+                        var isDeveloperNameAlreadyExist = db
+                            .AuthenticationSchemes.AsNoTracking()
+                            .Any(p => p.DeveloperName == request.DeveloperName.ToDeveloperName());
                         return !isDeveloperNameAlreadyExist;
                     }
                 )

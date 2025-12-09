@@ -1,13 +1,13 @@
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
-using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Entities;
 using App.Domain.Events;
 using App.Domain.ValueObjects;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.Admins.Commands;
 
@@ -34,9 +34,11 @@ public class CreateAdmin
                 .Custom(
                     (request, context) =>
                     {
-                        var entity = db.Users.FirstOrDefault(p =>
-                            p.EmailAddress.ToLower() == request.EmailAddress.ToLower()
-                        );
+                        var entity = db
+                            .Users.AsNoTracking()
+                            .FirstOrDefault(p =>
+                                p.EmailAddress.ToLower() == request.EmailAddress.ToLower()
+                            );
 
                         if (entity != null && entity.IsAdmin)
                         {

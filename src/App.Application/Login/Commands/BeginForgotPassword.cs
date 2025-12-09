@@ -1,12 +1,12 @@
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Entities;
 using App.Domain.Events;
 using App.Domain.ValueObjects;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.Login.Commands;
 
@@ -27,10 +27,12 @@ public class BeginForgotPassword
                 .Custom(
                     (request, context) =>
                     {
-                        var authScheme = db.AuthenticationSchemes.First(p =>
-                            p.DeveloperName
-                            == AuthenticationSchemeType.EmailAndPassword.DeveloperName
-                        );
+                        var authScheme = db
+                            .AuthenticationSchemes.AsNoTracking()
+                            .First(p =>
+                                p.DeveloperName
+                                == AuthenticationSchemeType.EmailAndPassword.DeveloperName
+                            );
 
                         if (!authScheme.IsEnabledForUsers && !authScheme.IsEnabledForAdmins)
                         {

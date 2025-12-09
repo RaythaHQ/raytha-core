@@ -1,11 +1,11 @@
-﻿using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Entities;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.EmailTemplates.Commands;
 
@@ -29,7 +29,9 @@ public class EditEmailTemplate
                 .Custom(
                     (request, context) =>
                     {
-                        var entity = db.EmailTemplates.FirstOrDefault(p => p.Id == request.Id.Guid);
+                        var entity = db
+                            .EmailTemplates.AsNoTracking()
+                            .FirstOrDefault(p => p.Id == request.Id.Guid);
                         if (entity == null)
                             throw new NotFoundException("EmailTemplate", request.Id);
 

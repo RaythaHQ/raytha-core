@@ -1,10 +1,10 @@
-﻿using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Entities;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.Admins.Commands;
 
@@ -23,7 +23,9 @@ public class CreateApiKey
                 .Custom(
                     (request, context) =>
                     {
-                        var user = db.Users.FirstOrDefault(p => p.Id == request.UserId.Guid);
+                        var user = db
+                            .Users.AsNoTracking()
+                            .FirstOrDefault(p => p.Id == request.UserId.Guid);
 
                         if (user == null || !user.IsAdmin)
                         {
@@ -34,7 +36,9 @@ public class CreateApiKey
                             return;
                         }
 
-                        var numKeysAlready = db.ApiKeys.Count(p => p.UserId == request.UserId.Guid);
+                        var numKeysAlready = db
+                            .ApiKeys.AsNoTracking()
+                            .Count(p => p.UserId == request.UserId.Guid);
                         if (numKeysAlready >= 10)
                         {
                             context.AddFailure(

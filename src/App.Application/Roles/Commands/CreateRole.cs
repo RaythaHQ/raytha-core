@@ -1,10 +1,10 @@
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Entities;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.Roles.Commands;
 
@@ -29,9 +29,11 @@ public class CreateRole
                 .Must(
                     (request, developerName) =>
                     {
-                        var entity = db.Roles.FirstOrDefault(p =>
-                            p.DeveloperName == request.DeveloperName.ToDeveloperName()
-                        );
+                        var entity = db
+                            .Roles.AsNoTracking()
+                            .FirstOrDefault(p =>
+                                p.DeveloperName == request.DeveloperName.ToDeveloperName()
+                            );
                         return !(entity != null);
                     }
                 )

@@ -1,10 +1,10 @@
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.AuthenticationSchemes.Commands;
 
@@ -20,9 +20,9 @@ public class DeleteAuthenticationScheme
                 .Custom(
                     (request, context) =>
                     {
-                        var entity = db.AuthenticationSchemes.FirstOrDefault(p =>
-                            p.Id == request.Id.Guid
-                        );
+                        var entity = db
+                            .AuthenticationSchemes.AsNoTracking()
+                            .FirstOrDefault(p => p.Id == request.Id.Guid);
                         if (entity == null)
                             throw new NotFoundException("Authentication Scheme", request.Id);
 
@@ -36,7 +36,8 @@ public class DeleteAuthenticationScheme
                         }
 
                         var onlyOneAdminAuthLeft =
-                            db.AuthenticationSchemes.Count(p => p.IsEnabledForAdmins) == 1;
+                            db.AuthenticationSchemes.AsNoTracking().Count(p => p.IsEnabledForAdmins)
+                            == 1;
                         if (entity.IsEnabledForAdmins && onlyOneAdminAuthLeft)
                         {
                             context.AddFailure(

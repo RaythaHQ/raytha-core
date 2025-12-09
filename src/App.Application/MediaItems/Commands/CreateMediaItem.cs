@@ -1,10 +1,10 @@
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Entities;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.MediaItems.Commands;
 
@@ -40,10 +40,7 @@ public class CreateMediaItem
                             )
                         )
                         {
-                            context.AddFailure(
-                                "ContentType",
-                                "File type is not allowed."
-                            );
+                            context.AddFailure("ContentType", "File type is not allowed.");
                             return;
                         }
 
@@ -56,13 +53,12 @@ public class CreateMediaItem
                             return;
                         }
 
-                        var entity = db.MediaItems.FirstOrDefault(p => p.Id == request.Id.Guid);
+                        var entity = db
+                            .MediaItems.AsNoTracking()
+                            .FirstOrDefault(p => p.Id == request.Id.Guid);
                         if (entity != null)
                         {
-                            context.AddFailure(
-                                "Id",
-                                "A media item with this ID already exists."
-                            );
+                            context.AddFailure("Id", "A media item with this ID already exists.");
                             return;
                         }
                     }
@@ -101,4 +97,3 @@ public class CreateMediaItem
         }
     }
 }
-

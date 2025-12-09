@@ -1,11 +1,11 @@
-﻿using CSharpVitamins;
-using FluentValidation;
-using Mediator;
-using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
+using Microsoft.EntityFrameworkCore;
 
 namespace App.Application.UserGroups.Commands;
 
@@ -22,7 +22,8 @@ public class DeleteUserGroup
                     (request, context) =>
                     {
                         var entity = db
-                            .UserGroups.Include(p => p.Users)
+                            .UserGroups.AsNoTracking()
+                            .Include(p => p.Users)
                             .FirstOrDefault(p => p.Id == request.Id.Guid);
                         if (entity == null)
                             throw new NotFoundException("UserGroup", request.Id);

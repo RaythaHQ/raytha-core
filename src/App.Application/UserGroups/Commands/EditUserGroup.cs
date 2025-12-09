@@ -1,9 +1,9 @@
-﻿using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.UserGroups.Commands;
 
@@ -23,7 +23,9 @@ public class EditUserGroup
                 .Custom(
                     (request, context) =>
                     {
-                        var entity = db.UserGroups.FirstOrDefault(p => p.Id == request.Id.Guid);
+                        var entity = db
+                            .UserGroups.AsNoTracking()
+                            .FirstOrDefault(p => p.Id == request.Id.Guid);
                         if (entity == null)
                             throw new NotFoundException("UserGroup", request.Id);
                     }

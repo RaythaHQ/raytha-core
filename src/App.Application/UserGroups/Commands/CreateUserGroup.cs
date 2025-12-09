@@ -1,10 +1,10 @@
-﻿using CSharpVitamins;
-using FluentValidation;
-using Mediator;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Domain.Entities;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
 
 namespace App.Application.UserGroups.Commands;
 
@@ -28,9 +28,11 @@ public class CreateUserGroup
                 .Must(
                     (request, developerName) =>
                     {
-                        var entity = db.UserGroups.FirstOrDefault(p =>
-                            p.DeveloperName == request.DeveloperName.ToDeveloperName()
-                        );
+                        var entity = db
+                            .UserGroups.AsNoTracking()
+                            .FirstOrDefault(p =>
+                                p.DeveloperName == request.DeveloperName.ToDeveloperName()
+                            );
                         return !(entity != null);
                     }
                 )

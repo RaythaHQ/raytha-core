@@ -1,17 +1,17 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
-using CSharpVitamins;
-using FluentValidation;
-using Mediator;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 using App.Application.Common.Security;
 using App.Application.Common.Utils;
 using App.Domain.Entities;
+using CSharpVitamins;
+using FluentValidation;
+using Mediator;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace App.Application.Login.Commands;
 
@@ -35,9 +35,9 @@ public class LoginWithJwt
                     (request, context) =>
                     {
                         var developerName = request.DeveloperName.ToDeveloperName();
-                        var authScheme = db.AuthenticationSchemes.FirstOrDefault(p =>
-                            p.DeveloperName == developerName
-                        );
+                        var authScheme = db
+                            .AuthenticationSchemes.AsNoTracking()
+                            .FirstOrDefault(p => p.DeveloperName == developerName);
 
                         if (authScheme == null)
                         {
@@ -109,7 +109,9 @@ public class LoginWithJwt
                                 return;
                             }
 
-                            var jtiResult = db.JwtLogins.FirstOrDefault(p => p.Jti == jti);
+                            var jtiResult = db
+                                .JwtLogins.AsNoTracking()
+                                .FirstOrDefault(p => p.Jti == jti);
                             if (jtiResult != null)
                             {
                                 context.AddFailure(
@@ -148,15 +150,17 @@ public class LoginWithJwt
                         var sub = payload.Sub;
                         if (payload.ContainsKey(JwtRegisteredClaimNames.Sub))
                         {
-                            entity = db.Users.FirstOrDefault(p =>
-                                p.SsoId == sub && p.AuthenticationSchemeId == authScheme.Id
-                            );
+                            entity = db
+                                .Users.AsNoTracking()
+                                .FirstOrDefault(p =>
+                                    p.SsoId == sub && p.AuthenticationSchemeId == authScheme.Id
+                                );
                         }
                         else
                         {
-                            entity = db.Users.FirstOrDefault(p =>
-                                p.EmailAddress.ToLower() == email
-                            );
+                            entity = db
+                                .Users.AsNoTracking()
+                                .FirstOrDefault(p => p.EmailAddress.ToLower() == email);
                         }
 
                         if (entity != null)
