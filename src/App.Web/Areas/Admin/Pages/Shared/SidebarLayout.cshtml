@@ -1,4 +1,4 @@
-﻿@inject IAuthorizationService AuthorizationService
+@inject IAuthorizationService AuthorizationService
 @inject ICurrentOrganization CurrentOrganization
 @inject ICurrentUser CurrentUser
 @using App.Domain.Entities
@@ -35,7 +35,7 @@
         <ul class="nav flex-column pt-3 pt-md-0">
             <li class="nav-item">
                 <a asp-page="@RouteNames.Dashboard.Index" class="nav-link d-flex align-items-center">
-                    <span class="sidebar-text fw-bold fs-4">App</span>
+                    <span class="sidebar-text fw-bold fs-4">@(CurrentOrganization?.OrganizationName ?? "App")</span>
                 </a>
             </li>
             <li class="nav-item @(IsActivePage("Dashboard"))">
