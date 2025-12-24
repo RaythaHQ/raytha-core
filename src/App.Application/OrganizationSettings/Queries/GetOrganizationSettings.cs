@@ -23,7 +23,9 @@ public class GetOrganizationSettings
             CancellationToken cancellationToken
         )
         {
-            var settings = _db.OrganizationSettings.AsNoTracking().FirstOrDefault();
+            var settings = await _db.OrganizationSettings
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
 
             return new QueryResponseDto<OrganizationSettingsDto>(
                 OrganizationSettingsDto.GetProjection(settings)

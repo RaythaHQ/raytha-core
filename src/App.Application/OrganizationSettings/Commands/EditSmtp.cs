@@ -2,6 +2,7 @@
 using CSharpVitamins;
 using FluentValidation;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
 
@@ -48,10 +49,12 @@ public class EditSmtp
     public class Handler : IRequestHandler<Command, CommandResponseDto<ShortGuid>>
     {
         private readonly IAppDbContext _db;
+        private readonly IOrganizationSettingsCache _cache;
 
-        public Handler(IAppDbContext db)
+        public Handler(IAppDbContext db, IOrganizationSettingsCache cache)
         {
             _db = db;
+            _cache = cache;
         }
 
         public async ValueTask<CommandResponseDto<ShortGuid>> Handle(
@@ -59,7 +62,7 @@ public class EditSmtp
             CancellationToken cancellationToken
         )
         {
-            var entity = _db.OrganizationSettings.First();
+            var entity = await _db.OrganizationSettings.FirstAsync(cancellationToken);
 
             entity.SmtpOverrideSystem = request.SmtpOverrideSystem;
             entity.SmtpHost = request.SmtpHost;
@@ -68,6 +71,9 @@ public class EditSmtp
             entity.SmtpPassword = request.SmtpPassword;
 
             await _db.SaveChangesAsync(cancellationToken);
+
+            // Invalidate cache after changes
+            _cache.InvalidateOrganizationSettings();
 
             return new CommandResponseDto<ShortGuid>(entity.Id);
         }

@@ -1,6 +1,7 @@
 using CSharpVitamins;
 using FluentValidation;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
@@ -39,7 +40,10 @@ public class ChangeProfile
             CancellationToken cancellationToken
         )
         {
-            var entity = _db.Users.FirstOrDefault(p => p.Id == request.Id.Guid);
+            var entity = await _db.Users.FirstOrDefaultAsync(
+                p => p.Id == request.Id.Guid,
+                cancellationToken
+            );
 
             if (entity == null)
                 throw new NotFoundException("Admin", request.Id);

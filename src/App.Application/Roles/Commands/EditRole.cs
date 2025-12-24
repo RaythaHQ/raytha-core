@@ -62,7 +62,10 @@ public class EditRole
             CancellationToken cancellationToken
         )
         {
-            var entity = _db.Roles.FirstOrDefault(p => p.Id == request.Id.Guid);
+            var entity = await _db.Roles.FirstOrDefaultAsync(
+                p => p.Id == request.Id.Guid,
+                cancellationToken
+            );
             if (entity == null)
                 throw new NotFoundException("Role", request.Id);
 

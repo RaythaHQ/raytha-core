@@ -1,62 +1,29 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using CSharpVitamins;
-using Mediator;
-using App.Application.AuthenticationSchemes;
-using App.Application.AuthenticationSchemes.Queries;
+﻿using App.Application.AuthenticationSchemes;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Utils;
 using App.Application.OrganizationSettings;
-using App.Application.OrganizationSettings.Queries;
 using App.Domain.ValueObjects;
 
 namespace App.Web.Services;
 
 public class CurrentOrganization : ICurrentOrganization
 {
-    private OrganizationSettingsDto _organizationSettings;
-    private IEnumerable<AuthenticationSchemeDto> _authenticationSchemes;
+    private readonly IOrganizationSettingsCache _cache;
+    private readonly ICurrentOrganizationConfiguration _configuration;
 
-    private readonly ISender Mediator;
-    private readonly ICurrentOrganizationConfiguration Configuration;
-
-    public CurrentOrganization(ISender mediator, ICurrentOrganizationConfiguration configuration)
+    public CurrentOrganization(
+        IOrganizationSettingsCache cache,
+        ICurrentOrganizationConfiguration configuration
+    )
     {
-        Mediator = mediator;
-        Configuration = configuration;
+        _cache = cache;
+        _configuration = configuration;
     }
 
-    private OrganizationSettingsDto OrganizationSettings
-    {
-        get
-        {
-            if (_organizationSettings == null)
-            {
-                var response = Mediator
-                    .Send(new GetOrganizationSettings.Query())
-                    .GetAwaiter()
-                    .GetResult();
-                _organizationSettings = response.Result;
-            }
-            return _organizationSettings;
-        }
-    }
+    private OrganizationSettingsDto? OrganizationSettings => _cache.GetOrganizationSettings();
 
-    public IEnumerable<AuthenticationSchemeDto> AuthenticationSchemes
-    {
-        get
-        {
-            if (_authenticationSchemes == null)
-            {
-                var response = Mediator
-                    .Send(new GetAuthenticationSchemes.Query())
-                    .GetAwaiter()
-                    .GetResult();
-                _authenticationSchemes = response.Result.Items;
-            }
-            return _authenticationSchemes;
-        }
-    }
+    public IEnumerable<AuthenticationSchemeDto> AuthenticationSchemes =>
+        _cache.GetAuthenticationSchemes();
 
     public bool EmailAndPasswordIsEnabledForAdmins =>
         AuthenticationSchemes.Any(p =>
@@ -86,6 +53,6 @@ public class CurrentOrganization : ICurrentOrganization
     public OrganizationTimeZoneConverter TimeZoneConverter =>
         OrganizationTimeZoneConverter.From(TimeZone, DateFormat);
 
-    public string PathBase => Configuration.PathBase;
-    public string RedirectWebsite => Configuration.RedirectWebsite;
+    public string PathBase => _configuration.PathBase;
+    public string RedirectWebsite => _configuration.RedirectWebsite;
 }

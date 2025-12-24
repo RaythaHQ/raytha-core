@@ -1,5 +1,6 @@
 ﻿using CSharpVitamins;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Exceptions;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models;
@@ -24,7 +25,10 @@ public class DeleteApiKey
             CancellationToken cancellationToken
         )
         {
-            var entity = _db.ApiKeys.FirstOrDefault(p => p.Id == request.Id.Guid);
+            var entity = await _db.ApiKeys.FirstOrDefaultAsync(
+                p => p.Id == request.Id.Guid,
+                cancellationToken
+            );
             if (entity == null)
                 throw new NotFoundException("Api Key", request.Id);
 

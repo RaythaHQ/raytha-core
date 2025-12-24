@@ -24,7 +24,9 @@ public class GetMediaItemById
             CancellationToken cancellationToken
         )
         {
-            var entity = _db.MediaItems.AsNoTracking().FirstOrDefault(p => p.Id == request.Id.Guid);
+            var entity = await _db.MediaItems
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == request.Id.Guid, cancellationToken);
 
             if (entity == null)
                 throw new NotFoundException("MediaItem", request.Id);

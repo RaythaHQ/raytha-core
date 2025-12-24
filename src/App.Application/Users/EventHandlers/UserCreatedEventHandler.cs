@@ -1,5 +1,6 @@
 ﻿using CSharpVitamins;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models.RenderModels;
 using App.Domain.Common;
@@ -35,9 +36,12 @@ public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
     {
         if (notification.SendEmail)
         {
-            EmailTemplate renderTemplate = _db.EmailTemplates.First(p =>
-                p.DeveloperName == BuiltInEmailTemplate.UserWelcomeEmail
-            );
+            var renderTemplate = await _db.EmailTemplates
+                .AsNoTracking()
+                .FirstAsync(
+                    p => p.DeveloperName == BuiltInEmailTemplate.UserWelcomeEmail,
+                    cancellationToken
+                );
 
             SendUserWelcomeEmail_RenderModel entity = new SendUserWelcomeEmail_RenderModel
             {

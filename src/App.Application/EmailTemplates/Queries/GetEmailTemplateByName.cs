@@ -28,9 +28,12 @@ public class GetEmailTemplateByName
             CancellationToken cancellationToken
         )
         {
-            var entity = _db
-                .EmailTemplates.AsNoTracking()
-                .FirstOrDefault(p => p.DeveloperName == request.DeveloperName.ToDeveloperName());
+            var entity = await _db.EmailTemplates
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    p => p.DeveloperName == request.DeveloperName.ToDeveloperName(),
+                    cancellationToken
+                );
 
             if (entity == null)
                 throw new NotFoundException("EmailTemplate", request.DeveloperName);

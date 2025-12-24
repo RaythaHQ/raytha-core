@@ -23,27 +23,38 @@ public class QueuedHostedService : BackgroundService
 
     private async Task BackgroundProcessing(CancellationToken stoppingToken)
     {
-        using (IServiceScope scope = _serviceProvider.CreateScope())
+        while (!stoppingToken.IsCancellationRequested)
         {
-            IBackgroundTaskQueue _taskQueue =
-                scope.ServiceProvider.GetRequiredService<IBackgroundTaskQueue>();
-
-            IAppDbContext _db = scope.ServiceProvider.GetRequiredService<IAppDbContext>();
-
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                Thread.Sleep(1000);
-                var dqTask = await _taskQueue.DequeueAsync(stoppingToken);
-                if (dqTask == null)
-                    continue;
+                await Task.Delay(1000, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
 
-                var backgroundTask = _db.BackgroundTasks.First(p => p.Id == dqTask.Id);
+            // Create a new scope for each task to ensure fresh DbContext and proper disposal
+            using var scope = _serviceProvider.CreateScope();
+            var taskQueue = scope.ServiceProvider.GetRequiredService<IBackgroundTaskQueue>();
+            var db = scope.ServiceProvider.GetRequiredService<IAppDbContext>();
 
-                try
+            var backgroundTask = await taskQueue.DequeueAsync(stoppingToken);
+            if (backgroundTask == null)
+                continue;
+
+            try
+            {
+                var taskType = Type.GetType(backgroundTask.Name);
+                if (taskType == null)
                 {
-                    IExecuteBackgroundTask scopedProcessingService =
-                        scope.ServiceProvider.GetRequiredService(Type.GetType(backgroundTask.Name))
-                        as IExecuteBackgroundTask;
+                    backgroundTask.Status = BackgroundTaskStatus.Error;
+                    backgroundTask.ErrorMessage = $"Task type not found: {backgroundTask.Name}";
+                }
+                else
+                {
+                    var scopedProcessingService =
+                        scope.ServiceProvider.GetRequiredService(taskType) as IExecuteBackgroundTask;
 
                     await scopedProcessingService.Execute(
                         backgroundTask.Id,
@@ -52,16 +63,19 @@ public class QueuedHostedService : BackgroundService
                     );
                     backgroundTask.Status = BackgroundTaskStatus.Complete;
                 }
-                catch (Exception ex)
-                {
-                    backgroundTask.Status = BackgroundTaskStatus.Error;
-                    backgroundTask.ErrorMessage = ex.Message;
-                }
-                backgroundTask.PercentComplete = 100;
-                backgroundTask.CompletionTime = DateTime.UtcNow;
-                _db.BackgroundTasks.Update(backgroundTask);
-                await _db.SaveChangesAsync(stoppingToken);
             }
+            catch (Exception ex)
+            {
+                backgroundTask.Status = BackgroundTaskStatus.Error;
+                backgroundTask.ErrorMessage = ex.Message;
+            }
+
+            backgroundTask.PercentComplete = 100;
+            backgroundTask.CompletionTime = DateTime.UtcNow;
+
+            // Attach the entity (from Dapper) to EF Core for tracking and update
+            db.BackgroundTasks.Update(backgroundTask);
+            await db.SaveChangesAsync(stoppingToken);
         }
     }
 }

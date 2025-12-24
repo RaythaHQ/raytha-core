@@ -29,12 +29,13 @@ public class LoginWithApiKey
         )
         {
             var hashedApiKey = PasswordUtility.Hash(request.ApiKey);
-            var entity = _db
-                .ApiKeys.Include(p => p.User)
+            var entity = await _db.ApiKeys
+                .AsNoTracking()
+                .Include(p => p.User)
                 .ThenInclude(p => p.UserGroups)
                 .Include(p => p.User)
                 .ThenInclude(p => p.Roles)
-                .FirstOrDefault(p => p.ApiKeyHash == hashedApiKey);
+                .FirstOrDefaultAsync(p => p.ApiKeyHash == hashedApiKey, cancellationToken);
 
             if (entity == null)
                 throw new InvalidApiKeyException("Api key was not found.");

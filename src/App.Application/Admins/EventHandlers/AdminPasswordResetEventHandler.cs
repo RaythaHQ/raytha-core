@@ -1,5 +1,6 @@
 ﻿using CSharpVitamins;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models.RenderModels;
 using App.Domain.Common;
@@ -38,9 +39,12 @@ public class AdminPasswordResetEventHandler : INotificationHandler<AdminPassword
     {
         if (notification.SendEmail)
         {
-            EmailTemplate renderTemplate = _db.EmailTemplates.First(p =>
-                p.DeveloperName == BuiltInEmailTemplate.AdminPasswordResetEmail
-            );
+            var renderTemplate = await _db.EmailTemplates
+                .AsNoTracking()
+                .FirstAsync(
+                    p => p.DeveloperName == BuiltInEmailTemplate.AdminPasswordResetEmail,
+                    cancellationToken
+                );
 
             SendAdminPasswordReset_RenderModel entity = new SendAdminPasswordReset_RenderModel
             {

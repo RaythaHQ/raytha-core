@@ -24,9 +24,9 @@ public class GetBackgroundTaskById
             CancellationToken cancellationToken
         )
         {
-            var entity = _db
-                .BackgroundTasks.AsNoTracking()
-                .FirstOrDefault(p => p.Id == request.Id.Guid);
+            var entity = await _db.BackgroundTasks
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == request.Id.Guid, cancellationToken);
 
             if (entity == null)
                 throw new NotFoundException("Background Task", request.Id);

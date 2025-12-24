@@ -71,11 +71,17 @@ public class InitialSetup
 
         private readonly IAppDbContext _db;
         private readonly IEmailerConfiguration _emailerConfiguration;
+        private readonly IOrganizationSettingsCache _cache;
 
-        public Handler(IAppDbContext db, IEmailerConfiguration emailerConfiguration)
+        public Handler(
+            IAppDbContext db,
+            IEmailerConfiguration emailerConfiguration,
+            IOrganizationSettingsCache cache
+        )
         {
             _db = db;
             _emailerConfiguration = emailerConfiguration;
+            _cache = cache;
         }
 
         public async ValueTask<CommandResponseDto<ShortGuid>> Handle(
@@ -88,6 +94,9 @@ public class InitialSetup
             InsertDefaultEmailTemplates();
             InsertDefaultAuthentications();
             await _db.SaveChangesAsync(cancellationToken);
+
+            // Invalidate cache after initial setup
+            _cache.InvalidateAll();
 
             return new CommandResponseDto<ShortGuid>(orgSettingsGuid);
         }

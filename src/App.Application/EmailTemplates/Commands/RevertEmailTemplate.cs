@@ -25,9 +25,9 @@ public class RevertEmailTemplate
             CancellationToken cancellationToken
         )
         {
-            var entity = _db
-                .EmailTemplateRevisions.Include(p => p.EmailTemplate)
-                .First(p => p.Id == request.Id.Guid);
+            var entity = await _db.EmailTemplateRevisions
+                .Include(p => p.EmailTemplate)
+                .FirstAsync(p => p.Id == request.Id.Guid, cancellationToken);
 
             var newRevision = new EmailTemplateRevision
             {

@@ -29,9 +29,12 @@ public class GetAuthenticationSchemeByName
             CancellationToken cancellationToken
         )
         {
-            var entity = _db
-                .AuthenticationSchemes.AsNoTracking()
-                .FirstOrDefault(p => p.DeveloperName == request.DeveloperName.ToDeveloperName());
+            var entity = await _db.AuthenticationSchemes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    p => p.DeveloperName == request.DeveloperName.ToDeveloperName(),
+                    cancellationToken
+                );
 
             if (entity == null)
                 throw new NotFoundException(

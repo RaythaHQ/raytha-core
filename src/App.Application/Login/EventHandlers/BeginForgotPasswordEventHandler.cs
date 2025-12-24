@@ -1,5 +1,6 @@
 ﻿using CSharpVitamins;
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using App.Application.Common.Interfaces;
 using App.Application.Common.Models.RenderModels;
 using App.Domain.Common;
@@ -38,9 +39,12 @@ public class BeginForgotPasswordEventHandler : INotificationHandler<BeginForgotP
     {
         if (notification.SendEmail)
         {
-            EmailTemplate renderTemplate = _db.EmailTemplates.First(p =>
-                p.DeveloperName == BuiltInEmailTemplate.LoginBeginForgotPasswordEmail
-            );
+            var renderTemplate = await _db.EmailTemplates
+                .AsNoTracking()
+                .FirstAsync(
+                    p => p.DeveloperName == BuiltInEmailTemplate.LoginBeginForgotPasswordEmail,
+                    cancellationToken
+                );
             SendBeginForgotPassword_RenderModel entity = new SendBeginForgotPassword_RenderModel
             {
                 Id = (ShortGuid)notification.User.Id,

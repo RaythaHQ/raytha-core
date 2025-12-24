@@ -99,10 +99,12 @@ public class CreateAuthenticationScheme
     public class Handler : IRequestHandler<Command, CommandResponseDto<ShortGuid>>
     {
         private readonly IAppDbContext _db;
+        private readonly IOrganizationSettingsCache _cache;
 
-        public Handler(IAppDbContext db)
+        public Handler(IAppDbContext db, IOrganizationSettingsCache cache)
         {
             _db = db;
+            _cache = cache;
         }
 
         public async ValueTask<CommandResponseDto<ShortGuid>> Handle(
@@ -132,6 +134,9 @@ public class CreateAuthenticationScheme
             _db.AuthenticationSchemes.Add(entity);
 
             await _db.SaveChangesAsync(cancellationToken);
+
+            // Invalidate cache after changes
+            _cache.InvalidateAuthenticationSchemes();
 
             return new CommandResponseDto<ShortGuid>(entity.Id);
         }

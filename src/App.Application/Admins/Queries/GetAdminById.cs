@@ -24,10 +24,10 @@ public class GetAdminById
             CancellationToken cancellationToken
         )
         {
-            var entity = _db
-                .Users.AsNoTracking()
+            var entity = await _db.Users
+                .AsNoTracking()
                 .Include(p => p.Roles)
-                .FirstOrDefault(p => p.Id == request.Id.Guid);
+                .FirstOrDefaultAsync(p => p.Id == request.Id.Guid, cancellationToken);
 
             if (entity == null)
                 throw new NotFoundException("Admin", request.Id);

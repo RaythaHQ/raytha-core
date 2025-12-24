@@ -109,6 +109,9 @@ public static class ConfigureServices
                 o.JsonSerializerOptions.Converters.Add(new ShortGuidConverter());
                 o.JsonSerializerOptions.Converters.Add(new AuditableUserDtoConverter());
             });
+        services.AddMemoryCache();
+        services.AddSingleton<IOrganizationSettingsCache, OrganizationSettingsCache>();
+
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<ICurrentOrganization, CurrentOrganization>();
         services.AddScoped<IRelativeUrlBuilder, RelativeUrlBuilder>();

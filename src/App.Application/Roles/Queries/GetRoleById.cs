@@ -24,7 +24,9 @@ public class GetRoleById
             CancellationToken cancellationToken
         )
         {
-            var entity = _db.Roles.AsNoTracking().FirstOrDefault(p => p.Id == request.Id.Guid);
+            var entity = await _db.Roles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == request.Id.Guid, cancellationToken);
 
             if (entity == null)
                 throw new NotFoundException("Role", request.Id);
