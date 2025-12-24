@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using App.Domain.Entities;
 
 namespace App.Application.Common.Interfaces;
@@ -24,3 +24,4 @@ public interface IAppDbContext
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
+

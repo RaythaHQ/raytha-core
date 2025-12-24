@@ -42,7 +42,7 @@ public class AppAdminAuthorizationHandler : IAuthorizationHandler
         }
 
         var systemPermissionsClaims = context
-            .User.Claims.Where(p => p.Type == RaythaClaimTypes.SystemPermissions)
+            .User.Claims.Where(p => p.Type == AppClaimTypes.SystemPermissions)
             .Select(p => p.Value)
             .ToArray();
 
@@ -118,7 +118,7 @@ public class AppAdminAuthorizationHandler : IAuthorizationHandler
 
     private static bool IsAdmin(ClaimsPrincipal user)
     {
-        var isAdminClaim = user.Claims.FirstOrDefault(c => c.Type == RaythaClaimTypes.IsAdmin);
+        var isAdminClaim = user.Claims.FirstOrDefault(c => c.Type == AppClaimTypes.IsAdmin);
         if (isAdminClaim == null)
         {
             return false;

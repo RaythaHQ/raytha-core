@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Raytha.Web": {
+    "App.Web": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

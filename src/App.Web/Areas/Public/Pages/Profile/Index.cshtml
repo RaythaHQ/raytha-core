@@ -15,7 +15,7 @@
                     <div class="row">
                         <div class="col">
                             <div class="mb-3">
-                                <label class="form-label raytha-required" asp-for="Form.FirstName"></label>
+                                <label class="form-label app-required" asp-for="Form.FirstName"></label>
                                 <input type="text" class="form-control @Model.HasError("FirstName")"
                                     asp-for="Form.FirstName" required>
                                 <div class="invalid-feedback">@Model.ErrorMessageFor("FirstName")</div>
@@ -23,7 +23,7 @@
                         </div>
                         <div class="col">
                             <div class="mb-3">
-                                <label class="form-label raytha-required" asp-for="Form.LastName"></label>
+                                <label class="form-label app-required" asp-for="Form.LastName"></label>
                                 <input type="text" class="form-control @Model.HasError("LastName")"
                                     asp-for="Form.LastName" required>
                                 <div class="invalid-feedback">@Model.ErrorMessageFor("LastName")</div>

@@ -21,7 +21,5 @@
     <None Remove="Entities\DefaultTemplates\email_user_passwordchanged.liquid" />
     <None Remove="Entities\DefaultTemplates\email_user_passwordreset.liquid" />
     <None Remove="Entities\DefaultTemplates\email_user_welcome.liquid" />
-    <None Remove="Entities\DefaultTemplates\raytha_html_login_magiclink.liquid" />
-    <None Remove="Entities\DefaultTemplates\raytha_html_login_magiclinksent.liquid" />
   </ItemGroup>
 </Project>

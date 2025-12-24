@@ -5,8 +5,8 @@
         public const string VALIDATION_SUMMARY = "__ValidationSummary";
 
         public const string AUDIT_LOG_LOGGABLE_REQUEST =
-            "Raytha.Applications.Common.Models.LoggableRequest";
+            "App.Application.Common.Models.LoggableRequest";
         public const string AUDIT_LOG_LOGGABLE_ENTITY_REQUEST =
-            "Raytha.Applications.Common.Models.LoggableEntityRequest";
+            "App.Application.Common.Models.LoggableEntityRequest";
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace App.Application.Common.Interfaces;
+namespace App.Application.Common.Interfaces;
 
 /// <summary>
 /// Interface for retrieving raw database information.
@@ -19,3 +19,4 @@ public class DbSpaceUsed
     public string data { get; init; }
     public string index_size { get; init; }
 }
+

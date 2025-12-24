@@ -251,16 +251,16 @@ public static class RouteNames
     }
 
     /// <summary>
-    /// Route constants for Raytha Functions management pages.
+    /// Route constants for App Functions management pages.
     /// </summary>
-    public static class RaythaFunctions
+    public static class AppFunctions
     {
-        public const string Index = "/RaythaFunctions/Index";
-        public const string Create = "/RaythaFunctions/Create";
-        public const string Edit = "/RaythaFunctions/Edit";
-        public const string Delete = "/RaythaFunctions/Delete";
-        public const string Execute = "/RaythaFunctions/Execute";
-        public const string Revisions = "/RaythaFunctions/Revisions";
+        public const string Index = "/AppFunctions/Index";
+        public const string Create = "/AppFunctions/Create";
+        public const string Edit = "/AppFunctions/Edit";
+        public const string Delete = "/AppFunctions/Delete";
+        public const string Execute = "/AppFunctions/Execute";
+        public const string Revisions = "/AppFunctions/Revisions";
     }
 
     /// <summary>

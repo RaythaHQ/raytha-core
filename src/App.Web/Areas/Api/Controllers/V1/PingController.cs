@@ -7,7 +7,7 @@ using App.Web.Authentication;
 
 namespace App.Web.Areas.Api.Controllers.V1;
 
-[Authorize(Policy = AppApiAuthorizationHandler.POLICY_PREFIX + RaythaClaimTypes.IsAdmin)]
+[Authorize(Policy = AppApiAuthorizationHandler.POLICY_PREFIX + AppClaimTypes.IsAdmin)]
 public class PingController : BaseController
 {
     [HttpGet(Name = "ping")]

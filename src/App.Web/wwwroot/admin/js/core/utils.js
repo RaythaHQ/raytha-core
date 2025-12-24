@@ -124,7 +124,7 @@ export const slugify = (str) => {
  * Converts "My Content Type" to "my_content_type"
  * @param {string} label - Label text
  * @param {Object} options - Options
- * @param {boolean} options.allowDot - When true, preserves dots in output (useful for Raytha function routes like feed.xml)
+ * @param {boolean} options.allowDot - When true, preserves dots in output (useful for function routes like feed.xml)
  * @returns {string} - Developer name (lowercase, underscores, alphanumeric only, optionally with dots)
  */
 export const toDeveloperName = (label, options = {}) => {

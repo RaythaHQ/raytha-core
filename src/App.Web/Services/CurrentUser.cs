@@ -50,12 +50,12 @@ public class CurrentUser : ICurrentUser
             : string.Empty;
     public string SsoId =>
         _httpContextAccessor
-            ?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == RaythaClaimTypes.SsoId)
+            ?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == AppClaimTypes.SsoId)
             ?.Value;
     public string AuthenticationScheme =>
         _httpContextAccessor
             ?.HttpContext.User.Claims.FirstOrDefault(c =>
-                c.Type == RaythaClaimTypes.AuthenticationScheme
+                c.Type == AppClaimTypes.AuthenticationScheme
             )
             ?.Value;
     public string RemoteIpAddress
@@ -84,12 +84,12 @@ public class CurrentUser : ICurrentUser
     }
     public bool IsAdmin =>
         _httpContextAccessor
-            ?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == RaythaClaimTypes.IsAdmin)
+            ?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == AppClaimTypes.IsAdmin)
             ?.Value != null
             ? Convert.ToBoolean(
                 _httpContextAccessor
                     ?.HttpContext.User.Claims.FirstOrDefault(c =>
-                        c.Type == RaythaClaimTypes.IsAdmin
+                        c.Type == AppClaimTypes.IsAdmin
                     )
                     ?.Value
             )
@@ -103,7 +103,7 @@ public class CurrentUser : ICurrentUser
             {
                 var lastModified = _httpContextAccessor
                     ?.HttpContext.User.Claims.FirstOrDefault(c =>
-                        c.Type == RaythaClaimTypes.LastModificationTime
+                        c.Type == AppClaimTypes.LastModificationTime
                     )
                     ?.Value;
                 if (!string.IsNullOrEmpty(lastModified))
@@ -120,12 +120,12 @@ public class CurrentUser : ICurrentUser
             .ToArray();
     public string[] UserGroups =>
         _httpContextAccessor
-            ?.HttpContext.User.Claims.Where(c => c.Type == RaythaClaimTypes.UserGroups)
+            ?.HttpContext.User.Claims.Where(c => c.Type == AppClaimTypes.UserGroups)
             .Select(p => p.Value)
             .ToArray();
     public string[] SystemPermissions =>
         _httpContextAccessor
-            ?.HttpContext.User.Claims.Where(c => c.Type == RaythaClaimTypes.SystemPermissions)
+            ?.HttpContext.User.Claims.Where(c => c.Type == AppClaimTypes.SystemPermissions)
             .Select(p => p.Value)
             .ToArray();
 }

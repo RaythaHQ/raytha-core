@@ -111,7 +111,7 @@ export const initSidebarPersistence = () => {
   const sidebar = document.querySelector('.sidebar');
   if (!sidebar) return;
   
-  const STORAGE_KEY = 'raytha_sidebar_state';
+  const STORAGE_KEY = 'app_sidebar_state';
   
   // Restore state from localStorage
   const savedState = localStorage.getItem(STORAGE_KEY);

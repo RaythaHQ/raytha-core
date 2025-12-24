@@ -38,7 +38,7 @@ public record PaginationQuery
 
     /// <summary>
     /// Validates and clamps the page size to an acceptable range (1-200).
-    /// Per raytha.instructions.md, max page size is 200.
+    /// Max page size is 200.
     /// </summary>
     public int ValidatedPageSize => Math.Clamp(PageSize == 0 ? 50 : PageSize, 1, 200);
 }

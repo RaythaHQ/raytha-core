@@ -14,7 +14,7 @@ public static class ConfigureServices
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddMediator(options =>
         {
-            options.Namespace = "Raytha.Application.Mediator";
+            options.Namespace = "App.Application.Mediator";
             options.ServiceLifetime = ServiceLifetime.Scoped;
         });
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));

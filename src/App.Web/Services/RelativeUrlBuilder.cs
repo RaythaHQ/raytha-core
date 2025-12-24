@@ -175,7 +175,7 @@ public class RelativeUrlBuilder : IRelativeUrlBuilder
         }
         var setCallbackParams = new Dictionary<string, string>
         {
-            { "raytha_callback_url", callbackUrl },
+            { "app_callback_url", callbackUrl },
         };
         var loginUrl = QueryHelpers.AddQueryString(signinUrl, setCallbackParams);
         return loginUrl;

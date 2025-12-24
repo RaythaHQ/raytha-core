@@ -1,4 +1,4 @@
-﻿.bg-raytha-blue {
+﻿.bg-app-blue {
     background-color: #4B5563;
 }
 
@@ -6,19 +6,19 @@
     color: white;
 }
 
-.raytha-view-nav .active {
+.app-view-nav .active {
     border-bottom-width: 1px;
     border-bottom-style: solid;
     font-weight: 700;
 }
 
-.raytha-view-nav .active {
+.app-view-nav .active {
     border-bottom-width: 1px;
     border-bottom-style: solid;
     font-weight: 700;
 }
 
-.raytha-view-nav {
+.app-view-nav {
     background-color: white;
     border-color: #e9ecef #e9ecef #dee2e6;
     border-right-color: rgb(222, 226, 230);
@@ -70,7 +70,7 @@
     isolation: isolate;
 }
 
-.raytha-data-card {
+.app-data-card {
     background-color: white;
     border-right-color: rgb(222, 226, 230);
     border-right-width: 1px;
@@ -82,27 +82,27 @@
     border-style:solid;
 }
 
-.raytha-dropdown-text {
+.app-dropdown-text {
     width: auto!important;
 }
 
-.raytha-required:after {
+.app-required:after {
     content: "\00a0*";
     color: red;
 }
 
-.raytha-draggable {
+.app-draggable {
     cursor: move;
 }
 
-.raytha-autocomplete-item:hover {
+.app-autocomplete-item:hover {
     color: #495057 !important;
     text-decoration: none !important;
     background-color: #f8f9fa !important;
     cursor: pointer !important;
 }
 
-.raytha-border-top {
+.app-border-top {
     border-top: 0.0625rem solid #9CA3AF;
     border-color: #e9ecef #e9ecef #dee2e6;
 }

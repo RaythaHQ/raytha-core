@@ -15,7 +15,7 @@ import { toDeveloperName } from '/admin/js/core/utils.js';
  * @param {string|HTMLInputElement} devNameInput - Developer name input element or selector
  * @param {Object} options - Options
  * @param {boolean} options.onlyIfEmpty - Only sync if developer name was initially empty (default: true)
- * @param {boolean} options.allowDot - When true, preserves dots in output (useful for Raytha function routes like feed.xml)
+ * @param {boolean} options.allowDot - When true, preserves dots in output (useful for function routes like feed.xml)
  * @returns {Function} - Cleanup function to remove listeners
  */
 export const bindDeveloperNameSync = (labelInput, devNameInput, options = {}) => {

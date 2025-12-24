@@ -44,7 +44,7 @@ public class UnhandledExceptionBehaviour<TMessage, TResponse>
             // retain diagnostic value without increasing the risk of sensitive data exposure in logs.
             _logger.LogError(
                 ex,
-                "Raytha Request: Unhandled Exception for Request {Name}",
+                "App Request: Unhandled Exception for Request {Name}",
                 messageName
             );
 

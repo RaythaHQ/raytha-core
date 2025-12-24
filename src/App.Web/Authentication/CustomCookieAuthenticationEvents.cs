@@ -55,12 +55,12 @@ public class CustomCookieAuthenticationEvents : CookieAuthenticationEvents
             new Claim(ClaimTypes.GivenName, user.Result.FirstName),
             new Claim(ClaimTypes.Surname, user.Result.LastName),
             new Claim(
-                RaythaClaimTypes.LastModificationTime,
+                AppClaimTypes.LastModificationTime,
                 user.Result.LastModificationTime.ToString()
             ),
-            new Claim(RaythaClaimTypes.IsAdmin, user.Result.IsAdmin.ToString()),
-            new Claim(RaythaClaimTypes.SsoId, user.Result.SsoId.IfNullOrEmpty(string.Empty)),
-            new Claim(RaythaClaimTypes.AuthenticationScheme, user.Result.AuthenticationScheme),
+            new Claim(AppClaimTypes.IsAdmin, user.Result.IsAdmin.ToString()),
+            new Claim(AppClaimTypes.SsoId, user.Result.SsoId.IfNullOrEmpty(string.Empty)),
+            new Claim(AppClaimTypes.AuthenticationScheme, user.Result.AuthenticationScheme),
         };
 
         var systemPermissions = new List<string>();
@@ -73,12 +73,12 @@ public class CustomCookieAuthenticationEvents : CookieAuthenticationEvents
 
         foreach (var systemPermission in systemPermissions.Distinct())
         {
-            claims.Add(new Claim(RaythaClaimTypes.SystemPermissions, systemPermission));
+            claims.Add(new Claim(AppClaimTypes.SystemPermissions, systemPermission));
         }
 
         foreach (var userGroup in user.Result.UserGroups)
         {
-            claims.Add(new Claim(RaythaClaimTypes.UserGroups, userGroup.DeveloperName));
+            claims.Add(new Claim(AppClaimTypes.UserGroups, userGroup.DeveloperName));
         }
 
         ClaimsIdentity identity = new ClaimsIdentity(

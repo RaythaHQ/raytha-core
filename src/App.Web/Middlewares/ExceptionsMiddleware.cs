@@ -15,7 +15,7 @@ namespace App.Web.Middlewares;
 
 public class ExceptionsMiddleware
 {
-    public const string ERROR_DETAILS_KEY = "Raytha.ErrorDetails";
+    public const string ERROR_DETAILS_KEY = "App.ErrorDetails";
 
     public static RequestDelegate ErrorHandlerDelegate(string pathBase, IWebHostEnvironment env)
     {

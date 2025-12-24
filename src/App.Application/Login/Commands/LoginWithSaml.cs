@@ -314,7 +314,7 @@ public class LoginWithSaml
         public string EmailAddress => GetSingleAttribute(JwtRegisteredClaimNames.Email);
         public string FirstName => GetSingleAttribute(JwtRegisteredClaimNames.GivenName);
         public string LastName => GetSingleAttribute(JwtRegisteredClaimNames.FamilyName);
-        public string[] UserGroups => GetArrayAttribute(RaythaClaimTypes.UserGroups);
+        public string[] UserGroups => GetArrayAttribute(AppClaimTypes.UserGroups);
 
         public bool IsValid
         {

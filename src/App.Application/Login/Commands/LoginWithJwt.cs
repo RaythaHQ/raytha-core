@@ -259,7 +259,7 @@ public class LoginWithJwt
                 payload.GetValueOrDefault<string, object>(JwtRegisteredClaimNames.FamilyName)
                 as string;
             var userGroupsList = payload
-                .Claims.Where(p => p.Type == RaythaClaimTypes.UserGroups)
+                .Claims.Where(p => p.Type == AppClaimTypes.UserGroups)
                 .Select(p => p.Value)
                 .ToList();
 

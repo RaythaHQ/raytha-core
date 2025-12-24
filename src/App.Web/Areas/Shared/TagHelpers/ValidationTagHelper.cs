@@ -8,14 +8,14 @@ namespace App.Web.Areas.Shared.TagHelpers;
 /// <summary>
 /// Tag helper for displaying validation CSS classes and error messages.
 /// Replaces the legacy HtmlHelper pattern with a more modern Tag Helper approach.
-/// Usage: &lt;input raytha-validation-for="PropertyName" /&gt;
+/// Usage: &lt;input app-validation-for="PropertyName" /&gt;
 /// </summary>
 [HtmlTargetElement("input", Attributes = ValidationForAttributeName)]
 [HtmlTargetElement("select", Attributes = ValidationForAttributeName)]
 [HtmlTargetElement("textarea", Attributes = ValidationForAttributeName)]
 public class ValidationCssTagHelper : TagHelper
 {
-    private const string ValidationForAttributeName = "raytha-validation-for";
+    private const string ValidationForAttributeName = "app-validation-for";
 
     /// <summary>
     /// Gets or sets the ViewContext for accessing validation state.
@@ -69,13 +69,13 @@ public class ValidationCssTagHelper : TagHelper
 
 /// <summary>
 /// Tag helper for displaying validation error messages for a specific property.
-/// Usage: &lt;div raytha-validation-message-for="PropertyName"&gt;&lt;/div&gt;
+/// Usage: &lt;div app-validation-message-for="PropertyName"&gt;&lt;/div&gt;
 /// </summary>
 [HtmlTargetElement("div", Attributes = ValidationMessageForAttributeName)]
 [HtmlTargetElement("span", Attributes = ValidationMessageForAttributeName)]
 public class ValidationMessageTagHelper : TagHelper
 {
-    private const string ValidationMessageForAttributeName = "raytha-validation-message-for";
+    private const string ValidationMessageForAttributeName = "app-validation-message-for";
 
     /// <summary>
     /// Gets or sets the ViewContext for accessing validation state.

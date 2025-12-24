@@ -56,7 +56,7 @@ public class BasePublicLoginPageModel : BasePublicPageModel
         List<Claim> claims = new List<Claim>();
         claims.Add(new Claim(ClaimTypes.NameIdentifier, result.Id.ToString()));
         claims.Add(
-            new Claim(RaythaClaimTypes.LastModificationTime, result.LastModificationTime.ToString())
+            new Claim(AppClaimTypes.LastModificationTime, result.LastModificationTime.ToString())
         );
         ClaimsIdentity identity = new ClaimsIdentity(
             claims,

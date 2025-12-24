@@ -1,6 +1,6 @@
-﻿namespace App.Application.Common.Security;
+namespace App.Application.Common.Security;
 
-public static class RaythaClaimTypes
+public static class AppClaimTypes
 {
     public const string LastModificationTime = "LastModificationTime";
     public const string IsAdmin = "IsAdmin";
@@ -9,3 +9,4 @@ public static class RaythaClaimTypes
     public const string AuthenticationScheme = "AuthenticationScheme";
     public const string UserGroups = "groups"; //https://www.rfc-editor.org/rfc/rfc9068.html
 }
+

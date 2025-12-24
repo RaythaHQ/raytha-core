@@ -6,5 +6,5 @@ using App.Web.Areas.Shared.Models;
 namespace App.Web.Areas.Admin.Pages.Shared.Models;
 
 [Area("Admin")]
-[Authorize(Policy = RaythaClaimTypes.IsAdmin)]
+[Authorize(Policy = AppClaimTypes.IsAdmin)]
 public abstract class BaseAdminPageModel : BasePageModel { }
