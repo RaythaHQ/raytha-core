@@ -43,11 +43,11 @@ public class GetUsers
                 );
             }
 
-            var total = await query.CountAsync();
-            var items = query
+            var total = await query.CountAsync(cancellationToken);
+            var items = await query
                 .ApplyPaginationInput(request)
                 .Select(UserDto.GetProjection())
-                .ToArray();
+                .ToArrayAsync(cancellationToken);
 
             return new QueryResponseDto<ListResultDto<UserDto>>(
                 new ListResultDto<UserDto>(items, total)

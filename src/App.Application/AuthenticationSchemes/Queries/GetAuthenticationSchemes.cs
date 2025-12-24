@@ -54,11 +54,11 @@ public class GetAuthenticationSchemes
                 );
             }
 
-            var total = await query.CountAsync();
-            var items = query
+            var total = await query.CountAsync(cancellationToken);
+            var items = await query
                 .ApplyPaginationInput(request)
                 .Select(AuthenticationSchemeDto.GetProjection())
-                .ToArray();
+                .ToArrayAsync(cancellationToken);
 
             return new QueryResponseDto<ListResultDto<AuthenticationSchemeDto>>(
                 new ListResultDto<AuthenticationSchemeDto>(items, total)

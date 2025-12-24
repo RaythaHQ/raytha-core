@@ -47,11 +47,11 @@ public class GetEmailTemplates
                 );
             }
 
-            var total = await query.CountAsync();
-            var items = query
+            var total = await query.CountAsync(cancellationToken);
+            var items = await query
                 .ApplyPaginationInput(request)
                 .Select(EmailTemplateDto.GetProjection())
-                .ToArray();
+                .ToArrayAsync(cancellationToken);
 
             return new QueryResponseDto<ListResultDto<EmailTemplateDto>>(
                 new ListResultDto<EmailTemplateDto>(items, total)

@@ -37,11 +37,11 @@ public class GetApiKeysForAdmin
                 .Where(p => p.UserId == request.UserId.Guid)
                 .AsQueryable();
 
-            var total = query.Count();
-            var items = query
+            var total = await query.CountAsync(cancellationToken);
+            var items = await query
                 .ApplyPaginationInput(request)
                 .Select(ApiKeyDto.GetProjection())
-                .ToArray();
+                .ToArrayAsync(cancellationToken);
 
             return new QueryResponseDto<ListResultDto<ApiKeyDto>>(
                 new ListResultDto<ApiKeyDto>(items, total)

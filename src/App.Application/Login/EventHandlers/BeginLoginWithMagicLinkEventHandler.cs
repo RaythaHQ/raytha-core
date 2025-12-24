@@ -90,7 +90,7 @@ public class BeginLoginWithMagicLinkEventHandler
                 To = new List<string> { entity.EmailAddress },
                 Subject = subject,
             };
-            _emailerService.SendEmail(emailMessage);
+            await _emailerService.SendEmailAsync(emailMessage, cancellationToken);
         }
     }
 }

@@ -43,11 +43,11 @@ public class GetRoles
                 );
             }
 
-            var total = await query.CountAsync();
-            var items = query
+            var total = await query.CountAsync(cancellationToken);
+            var items = await query
                 .ApplyPaginationInput(request)
                 .Select(RoleDto.GetProjection())
-                .ToArray();
+                .ToArrayAsync(cancellationToken);
 
             return new QueryResponseDto<ListResultDto<RoleDto>>(
                 new ListResultDto<RoleDto>(items, total)

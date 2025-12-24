@@ -18,7 +18,7 @@ public class Emailer : IEmailer
         _logger = logger;
     }
 
-    public void SendEmail(EmailMessage message)
+    public async Task SendEmailAsync(EmailMessage message, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(_configuration.SmtpHost))
         {
@@ -75,7 +75,7 @@ public class Emailer : IEmailer
             messageToSend.IsBodyHtml = message.IsHtml;
             messageToSend.Subject = message.Subject;
 
-            smtpClient.Send(messageToSend);
+            await smtpClient.SendMailAsync(messageToSend, cancellationToken);
         }
     }
 }

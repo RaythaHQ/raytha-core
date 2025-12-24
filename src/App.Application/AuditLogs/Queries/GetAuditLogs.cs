@@ -71,11 +71,11 @@ public class GetAuditLogs
                 query = query.Where(d => d.Category == request.Category);
             }
 
-            var total = await query.CountAsync();
-            var items = query
+            var total = await query.CountAsync(cancellationToken);
+            var items = await query
                 .ApplyPaginationInput(request)
                 .Select(AuditLogDto.GetProjection())
-                .ToArray();
+                .ToArrayAsync(cancellationToken);
 
             return new QueryResponseDto<ListResultDto<AuditLogDto>>(
                 new ListResultDto<AuditLogDto>(items, total)
