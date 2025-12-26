@@ -49,7 +49,7 @@ public class Startup
         });
         services.AddApplicationServices();
         services.AddInfrastructureServices(Configuration);
-        services.AddWebUIServices(Environment);
+        services.AddWebUIServices(Environment, Configuration);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

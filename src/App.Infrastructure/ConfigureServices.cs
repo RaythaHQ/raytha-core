@@ -5,10 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using App.Application.Common.Interfaces;
+using App.Application.Common.Models;
 using App.Application.Common.Utils;
 using App.Infrastructure.BackgroundTasks;
 using App.Infrastructure.Configurations;
 using App.Infrastructure.FileStorage;
+using App.Infrastructure.Logging;
 using App.Infrastructure.Persistence;
 using App.Infrastructure.Persistence.Interceptors;
 using App.Infrastructure.Services;
@@ -88,6 +90,41 @@ public static class ConfigureServices
             services.AddSingleton<IHostedService, QueuedHostedService>();
         }
         services.AddScoped<IBackgroundTaskQueue, BackgroundTaskQueue>();
+
+        // Register audit log writers
+        services.AddAuditLogWriters(configuration);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers audit log writers based on configuration.
+    /// PostgreSQL is always registered. Loki and OTEL are optional.
+    /// </summary>
+    private static IServiceCollection AddAuditLogWriters(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var options = configuration
+            .GetSection(ObservabilityOptions.SectionName)
+            .Get<ObservabilityOptions>() ?? new ObservabilityOptions();
+
+        // PostgreSQL writer is always registered (source of truth for UI)
+        services.AddScoped<IAuditLogWriter, PostgresAuditLogWriter>();
+
+        // Loki writer (optional, non-blocking)
+        var lokiOptions = options.AuditLog.AdditionalSinks.Loki;
+        if (lokiOptions?.Enabled == true && !string.IsNullOrEmpty(lokiOptions.Url))
+        {
+            services.AddSingleton<IAuditLogWriter, LokiAuditLogWriter>();
+        }
+
+        // OpenTelemetry writer (optional, non-blocking)
+        var otelOptions = options.AuditLog.AdditionalSinks.OpenTelemetry;
+        if (otelOptions?.Enabled == true)
+        {
+            services.AddScoped<IAuditLogWriter, OtelAuditLogWriter>();
+        }
 
         return services;
     }

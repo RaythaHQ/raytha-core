@@ -5,9 +5,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using App.Application.Common.Interfaces;
+using App.Application.Common.Models;
 using App.Application.Common.Security;
 using App.Domain.Entities;
 using App.Infrastructure.Persistence;
@@ -21,9 +27,16 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddWebUIServices(
         this IServiceCollection services,
-        IWebHostEnvironment environment
+        IWebHostEnvironment environment,
+        IConfiguration configuration
     )
     {
+        // Bind observability options
+        services.Configure<ObservabilityOptions>(
+            configuration.GetSection(ObservabilityOptions.SectionName));
+
+        // Configure observability services
+        services.AddObservabilityServices(configuration);
         // In development, use less restrictive cookie settings to allow non-HTTPS access
         // from non-localhost hosts (e.g., http://machinename:8888). SameSite=None requires
         // Secure, and Secure cookies are rejected from non-secure origins except localhost.
@@ -140,6 +153,76 @@ public static class ConfigureServices
             options.AddDocumentTransformer<ApiKeySecuritySchemeTransformer>();
         });
         services.AddRazorPages();
+        return services;
+    }
+
+    /// <summary>
+    /// Configures OpenTelemetry and Sentry observability services.
+    /// All integrations are optional and gracefully degrade when not configured.
+    /// </summary>
+    private static IServiceCollection AddObservabilityServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var options = configuration
+            .GetSection(ObservabilityOptions.SectionName)
+            .Get<ObservabilityOptions>() ?? new ObservabilityOptions();
+
+        // Configure OpenTelemetry if enabled
+        if (options.OpenTelemetry.Enabled && !string.IsNullOrEmpty(options.OpenTelemetry.OtlpEndpoint))
+        {
+            var serviceName = options.OpenTelemetry.ServiceName;
+            var otlpEndpoint = new Uri(options.OpenTelemetry.OtlpEndpoint);
+
+            services.AddOpenTelemetry()
+                .ConfigureResource(resource => resource
+                    .AddService(serviceName)
+                    .AddAttributes(new Dictionary<string, object>
+                    {
+                        ["deployment.environment"] = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "production"
+                    }))
+                .WithTracing(tracing => tracing
+                    .AddAspNetCoreInstrumentation(opts =>
+                    {
+                        opts.RecordException = true;
+                    })
+                    .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation()
+                    .AddOtlpExporter(opts =>
+                    {
+                        opts.Endpoint = otlpEndpoint;
+                    }))
+                .WithMetrics(metrics => metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddOtlpExporter(opts =>
+                    {
+                        opts.Endpoint = otlpEndpoint;
+                    }));
+
+            // Add OpenTelemetry logging if enabled
+            if (options.Logging.EnableOpenTelemetry)
+            {
+                services.AddLogging(logging =>
+                {
+                    logging.AddOpenTelemetry(otelLogging =>
+                    {
+                        otelLogging.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                            .AddService(serviceName));
+                        otelLogging.AddOtlpExporter(opts =>
+                        {
+                            opts.Endpoint = otlpEndpoint;
+                        });
+                    });
+                });
+            }
+        }
+
+        // Note: Sentry is configured via UseSentry() in the Startup Configure method
+        // or via environment variables (SENTRY_DSN). The Sentry.AspNetCore middleware
+        // will automatically pick up the configuration from environment variables.
+        // If you need programmatic configuration, use webBuilder.UseSentry() in Program.cs
+
         return services;
     }
 }
